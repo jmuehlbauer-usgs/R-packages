@@ -18,15 +18,18 @@ create('TEST')
 
 ##### Write functions #####
 
-## In the folder just created (above), go to the R folder, and add any functions (as files with no filetype) you wish to include in the library.
+## In the folder just created (above), go to the R folder, and add any functions (as files with no filetype) you wish to include in the library. Call the example below "testfx.r"
 	## Manipulate the header content of each function to include parameters, info, examples, etc. For example (below verbatim, including hashtags):
 
-#' A basic function
-#'
-#' This is a test function I wrote.
+#' @title A basic function
+#' @description This is a test function I wrote.
 #' @param test Tests if the function is working. Defaults to TRUE.
 #' @examples test()
-#' testfx() testfx<-function(test=TRUE){if(test==TRUE){print('It works!')}}
+#' @export
+testfx<-function(test=TRUE){
+	if(test==TRUE){print('It works!')}
+	else{'Hey, it still works!'}
+	}
 
 ## Create documentation
 setwd('./TEST')
@@ -35,9 +38,11 @@ document()
 
 ##### Install the package #####
 
-## Install to the local directory
+## Install to the local directory and try it!
 setwd('..')
 install('TEST')
+library(TEST)
+testfx()
 
 
 ##### Set up the local repository using GitBASH #####
@@ -52,6 +57,11 @@ git commit -m "Initial commit"
 ## Push to a GitHub repository
 git remote add origin https://github.com/jmuehlbauer-usgs/R-packages.git
 git pull origin master
+git commit -m "Merging with GitHub"
 git push origin master
-## Other users can install the package from GitHub (once it's posted):
+
+
+##### Download and install the package from GitHUB #####
+
+## Other users can now install the package from GitHub:
 install_github(repo='jmuehlbauer-usgs/R-packages',subdir='plots')
