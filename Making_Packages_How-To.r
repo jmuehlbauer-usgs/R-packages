@@ -64,4 +64,4 @@ git push origin master
 ##### Download and install the package from GitHUB #####
 
 ## Other users can now install the package from GitHub:
-install_github(repo='jmuehlbauer-usgs/R-packages',subdir='plots')
+install_github(repo='jmuehlbauer-usgs/R-packages',subdir='TEST')
