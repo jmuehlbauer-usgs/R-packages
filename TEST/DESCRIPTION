@@ -2,8 +2,8 @@ Package: TEST
 Title: A Silly Test of R Package Development
 Version: 1.0
 Date: 2016-06-15
-Author: Jeffrey D. Muehlbauer, jmuehlbauer@usgs.gov
-Maintainer: Jeffrey D. Muehlbauer, jmuehlbauer@usgs.gov
+Author: Jeffrey D. Muehlbauer
+Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
 Description: This is a really simple package, just meant as a test of R package development and posting to GitHub.
 Depends:
     R (>= 3.2.1)

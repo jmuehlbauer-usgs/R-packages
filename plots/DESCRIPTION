@@ -2,8 +2,8 @@ Package: plots
 Title: Convenience Functions for Common Plotting Operations
 Version: 0.0.1
 Date: 2016-06-15
-Author: Jeffrey D. Muehlbauer, jmuehlbauer@usgs.gov
-Maintainer: Jeffrey D. Muehlbauer, jmuehlbauer@usgs.gov
+Author: Jeffrey D. Muehlbauer
+Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
 Description: This packages contains some functions for carrying out common plotting operations in R. Specifically, it contains the function plotTypes to save R plots under a variety of file types, and function lineLoess to overlay loess fitted curves on data plots.
 Depends:
     R (>= 3.2.1)
