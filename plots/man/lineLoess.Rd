@@ -2,7 +2,7 @@
 % Please edit documentation in R/lineLoess.r
 \name{lineLoess}
 \alias{lineLoess}
-\title{Plot a fitted curve to data}
+\title{Overlay a fitted curve to a data plot}
 \usage{
 lineLoess(yvar, xvar, span = 0.75, method = "loess", ...)
 }
@@ -13,7 +13,7 @@ lineLoess(yvar, xvar, span = 0.75, method = "loess", ...)
 
 \item{span}{The smoother span for the line. Larger values produce smoother lines. Default is \code{0.75}.}
 
-\item{method}{the method for creating a fitted curve, either \code{loess} or \code{lowess}. Defaults to \code{loess}.}
+\item{method}{The method for creating a fitted curve, either \code{loess} or \code{lowess}. Defaults to \code{loess}.}
 
 \item{...}{Additional arguments to be passed on to \code{lines} or \code{loess}.}
 }

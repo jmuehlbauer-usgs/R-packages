@@ -1,11 +1,11 @@
-#' @title Plot a fitted curve to data
+#' @title Overlay a fitted curve to a data plot
 
 #' @description Fit a \code{loess} or \code{lowess} line to data and overlay the resultant fitted line on a plot.
 
 #' @param yvar The \code{y}, or dependent variable data to be fitted.
 #' @param xvar The \code{x}, or independent variable data to be fitted.
 #' @param span The smoother span for the line. Larger values produce smoother lines. Default is \code{0.75}. 
-#' @param method the method for creating a fitted curve, either \code{loess} or \code{lowess}. Defaults to \code{loess}.
+#' @param method The method for creating a fitted curve, either \code{loess} or \code{lowess}. Defaults to \code{loess}.
 #' @param ... Additional arguments to be passed on to \code{lines} or \code{loess}.
 
 #' @details
