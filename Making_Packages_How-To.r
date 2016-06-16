@@ -1,5 +1,4 @@
 ##### Create an R package #####
-## Last updated 14 June 2016 by J. D. Muehlbauer
 
 ##### Set working directory, create folder, load libraries
 
