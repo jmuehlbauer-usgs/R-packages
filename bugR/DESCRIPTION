@@ -7,6 +7,6 @@ Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
 Description: This package currently only contains a single function, NMS, which runs non-metric multidimensional scaling on matrices of data.
 Depends:
     R (>= 3.2.1),
-	vegan (>=2.3-5)
+	vegan (>= 2.3)
 License: GPL-3
 URL: https://github.com/jmuehlbauer-usgs/R-packages
