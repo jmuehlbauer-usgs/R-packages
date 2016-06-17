@@ -57,7 +57,7 @@ plot(pts)
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
 }
 \seealso{
-\code{\link{metaMDS}} in package \code{vegan}, on which this function depends.
+\code{\link{metaMDS}} in package \code{vegan}, on which this function depends. Pre-processing of the dataframe in preparation for running \code{NMS} may be accomplished using \code{\link{cv}}, \code{\link{delRare}}, and \code{\link{rel}}.
 }
 \concept{
 NMS, MDS, NMDS, stress, ordination

@@ -23,7 +23,7 @@
 
 #' @return Depending on inputs, creates and saves a screeplot showing ordination stress by number of ordination dimensions. It also creates and saves dataframes containing species (columns) and points/sites (rows) ordination values, in the specified number of ordination dimensions. These are saved as \code{.png} and \code{.csv} files in a folder called \code{NMS Output} that the function creates in the working directory.
 
-#' @seealso \code{\link{metaMDS}} in package \code{vegan}, on which this function depends.
+#' @seealso \code{\link{metaMDS}} in package \code{vegan}, on which this function depends. Pre-processing of the dataframe in preparation for running \code{NMS} may be accomplished using \code{\link{cv}}, \code{\link{delRare}}, and \code{\link{rel}}.
 
 #' @concept NMS, MDS, NMDS, stress, ordination
 
