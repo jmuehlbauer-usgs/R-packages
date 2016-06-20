@@ -55,7 +55,9 @@ plotTypes(foo,'HelloWorld',filetype=c('pdf','png'))
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
 }
 \seealso{
-\code{\link{pdf}}, \code{\link{png}}, \code{\link{jpeg}}, \code{\link{tiff}}, \code{\link{bmp}}, and \code{\link{setEPS}}, which this function wraps.
+\code{\link{pdf}}, \code{\link{png}}, \code{\link{jpeg}}, \code{\link{tiff}}, \code{\link{bmp}}, and \code{\link{setEPS}}, which this function wraps. 
+
+To save an R plot window as a \code{.ppt} file (very useful for creating presentations), see function \code{graph2ppt} in package \code{export} (\code{\link{https://github.com/tomwenseleers/export}}).
 }
 \concept{
 plot, plotting, save
