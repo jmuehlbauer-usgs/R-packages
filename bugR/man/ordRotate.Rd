@@ -32,25 +32,15 @@ This function allows ordination rotation around axes. It is strictly a tool for 
 This function only works for ordinations in 2 dimensions.
 }
 \examples{
-## Create some really simple, random data to look at in ordination space
-foo <- matrix(sample(0:20,100,replace=T), ncol = 5, nrow = 20)
-colnames(foo) <- paste("Spp", 1:5, sep="")
-rownames(foo) <- paste("Site", 1:20, sep="")
-
-## Run an NMS and read in resultant 2D points file
-NMS(foo,only23=TRUE,stepdown=FALSE)
-pts2D<-read.csv("NMS Output/NMSPoints2D.csv", row.names = 1, header = TRUE)
-
-## Create some silly environmental variables for envfit
-evar <- cbind(sample(0:20, 20, replace = TRUE), sample(3:8, 20, replace = TRUE))
-colnames(evar) <- c("Temperature", "pH")
-rownames(evar) <- rownames(foo)
-
-## Run envfit
+## Run envfit on some simple environmental data, using the 2-dimensional, NMSPoints2D file (pts2D) output by the NMS function
 efits <- envfit(pts2D, evar)
 
 ## Rotate axis so the temperature variable loads entirely on Axis 1
-ordRotate(pts2D, efits, 'Temperature')
+rot <- ordRotate(pts2D, efits, 'Temperature')
+## Compare rotated ordination to original
+par(mfrow = c(2, 1))
+plot(pts2D, main = "Original")
+plot(rot, main = "Rotated")
 }
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.

@@ -30,8 +30,12 @@ testfx<-function(test=TRUE){
 	else{'Hey, it still works!'}
 	}
 
-## Create documentation
+## Create some silly data to embed within package
 setwd('./TEST')
+mydat <- c(0, 2, 4, 6, 2, 54, 2)
+use_data(mydat)
+
+## Create documentation
 document()
 
 

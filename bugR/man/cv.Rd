@@ -21,13 +21,8 @@ Coefficients of variation suggest how amenable your dataset is to ordination. In
 The matrix specified in \code{Data} must contain only numeric values (i.e., no rows or columns of factors, site or species names, etc.) Site and species names may be included as row and column names, however.
 }
 \examples{
-## Create some really simple, random data to look at in ordination space
-foo <- matrix(sample(0:20,100,replace=T), ncol = 5, nrow = 20)
-colnames(foo) <- paste("Spp", 1:5, sep="")
-rownames(foo) <- paste("Site", 1:20, sep="")
-
-## compute cv
-cvfoo <- cv(foo)
+## Compute cv on some simple data
+cvord <- cv(ordmat)
 }
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.

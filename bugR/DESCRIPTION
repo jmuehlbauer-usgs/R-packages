@@ -1,13 +1,14 @@
 Package: bugR
 Title: Functions for Common Ecological Analyses of Invertebrate Data
-Version: 1.0
-Date: 2016-06-17
+Version: 1.0.1
+Date: 2016-07-12
 Author: Jeffrey D. Muehlbauer
 Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
-Description: This package contains functions for preparing, creating, and post-processing ordinations. Specific functions are as follows: 1) NMS, for running non-metric multidimensional scaling on matrices of data. 2) cv, for computing the coefficients of variaiton of rows and columns in the data. 3) rel, for relativizing the data. 4) delRare, for deleting rare species from the dataset. 5) axisR2, for computing the R^2 values of ordination axes. 6) ordRotate, for rotating ordinations according to environmental variables. 
+Description: This package contains functions for preparing, creating, and post-processing ordinations. Specific functions are as follows: 1) NMS, for running non-metric multidimensional scaling on matrices of data. 2) cv, for computing the coefficients of variation of rows and columns in the data. 3) rel, for relativizing the data. 4) delRare, for deleting rare species from the dataset. 5) axisR2, for computing the R^2 values of ordination axes. 6) ordRotate, for rotating ordinations according to environmental variables. 
 Depends:
     R (>= 3.2.1),
     vegan (>= 2.3)
 License: GPL-3
+LazyData: true
 URL: https://github.com/jmuehlbauer-usgs/R-packages
 RoxygenNote: 5.0.1

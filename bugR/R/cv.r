@@ -16,13 +16,8 @@
 #' @concept relativization, ordination, coefficient of variation
 
 #' @examples
-#' ## Create some really simple, random data to look at in ordination space
-#' foo <- matrix(sample(0:20,100,replace=T), ncol = 5, nrow = 20)
-#'	colnames(foo) <- paste("Spp", 1:5, sep="")
-#'	rownames(foo) <- paste("Site", 1:20, sep="")
-#' 
-#' ## compute cv
-#' cvfoo <- cv(foo)
+#' ## Compute cv on some simple data
+#' cvord <- cv(ordmat)
 
 #' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
 

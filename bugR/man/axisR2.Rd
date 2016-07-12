@@ -29,17 +29,9 @@ Generally \code{ord} will be the \code{"NMSPoints2D.csv"} or \code{"NMSPoints3D.
 The argument \code{dist.method} passes its value on to \code{\link{vegdist}} in package \code{vegan} and accepts any of its possible values. These include \code{"bray"}, \code{"jaccard"}, \code{"mahalanobis"}, \code{"manhattan"}, \code{"euclidean"}, \code{"binomial"}, and others (see \code{\link{vegdist}} documentation).
 }
 \examples{
-## Create some really simple, random data to look at in ordination space
-foo <- matrix(sample(0:20,100,replace=T), ncol = 5, nrow = 20)
-colnames(foo) <- paste("Spp", 1:5, sep="")
-rownames(foo) <- paste("Site", 1:20, sep="")
-
-## Run an NMS
-NMS(foo,only23=TRUE,stepdown=FALSE)
-
-## Read in resultant 2D points file, and get axis R^2 values.
-pts2D<-read.csv("NMS Output/NMSPoints2D.csv", row.names = 1, header = TRUE)
-axisR2(foo, pts2D)
+## Get axis R^2 values from the 2-dimensional, NMSPoints2D file (pts2D) output by the NMS function
+## Note that ordmat is a simple matrix that was fed into the NMS function.
+ordR2 <- axisR2(ordmat, pts2D)
 }
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.

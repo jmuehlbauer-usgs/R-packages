@@ -25,13 +25,8 @@ The matrix specified in \code{Data} must contain only numeric values (i.e., no r
 Relativization can be done by rows (\code{rel.by = "row"}, columns (\code{rel.by = "col"}), or both (\code{rel.by = c("row", "col")} or \code{rel.by = 'both'}).
 }
 \examples{
-## Create some really simple, random data to look at in ordination space
-foo <- matrix(sample(0:20,100,replace=T), ncol = 5, nrow = 20)
-colnames(foo) <- paste("Spp", 1:5, sep="")
-rownames(foo) <- paste("Site", 1:20, sep="")
-
-## Relativize by species maximum
-foo2 <- rel(foo, rel.by = "col")
+## Relativize some simple data by species maximum
+ordrel <- rel(ordmat, rel.by = "col")
 }
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}. Based on content from Dean Urban and Sarah Goslee.

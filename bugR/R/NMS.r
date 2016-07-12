@@ -28,18 +28,14 @@
 #' @concept NMS, MDS, NMDS, stress, ordination
 
 #' @examples
-#' ## Create some really simple, random data to look at in ordination space
-#' foo <- matrix(sample(0:10,100,replace=T), ncol = 5, nrow = 20)
-#'	colnames(foo) <- paste("Spp", 1:5, sep="")
-#'	rownames(foo) <- paste("Site", 1:20, sep="")
-#' 
-#' ## Run the ordination, with stepdown and all other defaults.
-#' NMS(foo)
+#' ## Run an ordination on some simple data, with stepdown and all other defaults
+#' NMS(ordmat)
 #' ## Note the output that will be saved in the new "NMS Output" folder on the working directory.
 #'
 #' ## Plot the ordination 2D results
-#' pts <- read.csv("NMS Output/NMSPoints2D.csv", row.names = 1, header = TRUE)
-#'	plot(pts)
+#' pts2D <- read.csv("NMS Output/NMSPoints2D.csv", row.names = 1, header = TRUE)
+#' plot(pts2D)
+
 #' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
 
 #' @export

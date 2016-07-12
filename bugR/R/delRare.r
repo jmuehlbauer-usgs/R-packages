@@ -22,13 +22,8 @@
 #' @concept relativization, ordination, coefficient of variation, rarity
 
 #' @examples
-#' ## Create some really simple, random data to look at in ordination space
-#' foo <- matrix(sample(0:20,100,replace=T), ncol = 5, nrow = 20)
-#'	colnames(foo) <- paste("Spp", 1:5, sep="")
-#'	rownames(foo) <- paste("Site", 1:20, sep="")
-#' 
-#' ## Delete species whose total abundance is < 200
-#' drfoo <- delRare(foo, filt = "abund", level = 200)
+#' ## Delete species whose total abundance is < 100 from a simple data matrix
+#' drmat <- delRare(ordmat, filt = "abund", level = 100)
 
 #' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
 
