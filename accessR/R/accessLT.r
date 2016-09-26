@@ -123,7 +123,7 @@ LTprocessed<-Counts
 	
 	## Clean up sample info dataframe to contain only columns of interest
 	LTsample1 <- LTsample[ , c('SampleID', 'Barcode', 'DeploymentSite', 'SampleDate', 'TimeOpen', 'TimeClose', 'DurationMinutes', 'Collector', 'River', 'RiverMile', 'RiverSide', 'WxDescrip', 'Wind', 'WindDirection', 'Habitat', 'Temp', 'TrapLocation', 'DistanceFromCenterpoint', 'AssociatedTrib?', 'SampleNotes', 'RedFlag', 'Processor', 'ProcessMinutes', 'ProcessNotes')]
-	colnames(LTSample1)[which(colnames(LTsample1) == 'AssociatedTrib?')] <- 'AssociatedTrib'
+	colnames(LTsample1)[which(colnames(LTsample1) == 'AssociatedTrib?')] <- 'AssociatedTrib'
 	
 	## Get species data for the samples
 	LTprocessed0<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample1$SampleID,collapse=", ",sep="")),")",sep=''))	
