@@ -109,8 +109,24 @@ LTprocessed<-Counts
 	## Rename Sort ID column in LTsample to SampleID and BarcodeID column to Barcode
 	colnames(LTsample)[1:2]<-c('SampleID','Barcode')
 	
+	## Convert Open, close, and processing times to useable format, calculate trap duration
+	hrs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 1, 2)) * 60)
+	mins <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 3, 4)))
+	secs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 5, 6))/60)
+	LTsample$ProcessMinutes <- round(hrs + mins + secs, 2)
+	LTsample$TimeOpen <- strftime(LTsample$OpenTime, format = '%H:%M')
+	LTsample$TimeClose <- strftime(LTsample$CloseTime, format = '%H:%M')
+	LTsample$DurationMinutes <- as.numeric(difftime(LTsample$CloseTime, LTsample$OpenTime, units = 'mins'))
+	
+	## Create a column for temp (mostly open temp, with closed temps when open temps are unavailable).
+	LTsample$Temp <- ifelse(is.na(LTsample$OpenTemp), LTsample$CloseTemp, LTsample$OpenTemp)
+	
+	## Clean up sample info dataframe to contain only columns of interest
+	LTsample1 <- LTsample[ , c('SampleID', 'Barcode', 'DeploymentSite', 'SampleDate', 'TimeOpen', 'TimeClose', 'DurationMinutes', 'Collector', 'River', 'RiverMile', 'RiverSide', 'WxDescrip', 'Wind', 'WindDirection', 'Habitat', 'Temp', 'TrapLocation', 'DistanceFromCenterpoint', 'AssociatedTrib?', 'SampleNotes', 'RedFlag', 'Processor', 'ProcessMinutes', 'ProcessNotes')]
+	colnames(LTSample1)[which(colnames(LTsample1) == 'AssociatedTrib?')] <- 'AssociatedTrib'
+	
 	## Get species data for the samples
-	LTprocessed0<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample$SampleID,collapse=", ",sep="")),")",sep=''))	
+	LTprocessed0<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample1$SampleID,collapse=", ",sep="")),")",sep=''))	
 	LTprocessed<-LTprocessed0[!is.na(LTprocessed0$Count),]
 
 	## Close database connection
@@ -131,15 +147,15 @@ for(i in 1:dim(LTprocessed)[1]){
 ## Clean up dataframe, converting variables to proper classes, removing No Bug data, and adding barcodes
 LTmat0<-tLT
 LTmat0[is.na(LTmat0)]<-0
-LTmat<-cbind(LTmat0$SampleID,LTsample$Barcode[match(LTmat0$SampleID,LTsample$SampleID)],LTmat0[,-1])
+LTmat<-cbind(LTmat0$SampleID,LTsample1$Barcode[match(LTmat0$SampleID,LTsample1$SampleID)],LTmat0[,-1])
 	colnames(LTmat)[1:2]<-c('SampleID','Barcode')
 if('NOBU'%in%colnames(LTmat)){LTmat1<-subset(LTmat,select=-NOBU)
 } else{LTmat1<-LTmat}
-LTprocessed1<-cbind(LTprocessed[,1:2],LTsample$Barcode[match(LTprocessed$SampleID,LTsample$SampleID)],LTprocessed[,c(-1,-2)])
+LTprocessed1<-cbind(LTprocessed[,1:2],LTsample1$Barcode[match(LTprocessed$SampleID,LTsample1$SampleID)],LTprocessed[,c(-1,-2)])
 	colnames(LTprocessed1)[3]<-'Barcode'
 ## Assign dataframes to an output list, sort by SampleID
 LTlist<-list()
-LTlist$Info<-droplevels(LTsample[order(LTsample$SampleID),])
+LTlist$Info<-droplevels(LTsample1[order(LTsample1$SampleID),])
 LTlist$Counts<-droplevels(LTprocessed1[order(LTprocessed1$SampleID,LTprocessed1$PickID),])
 LTlist$SppMat<-droplevels(LTmat1[order(LTmat1$SampleID),])
 
