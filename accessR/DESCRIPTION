@@ -1,6 +1,6 @@
 Package: accessR
 Title: Query and Manipulate Light Trap Data from the Access Foodbase Database
-Version: 1.1
+Version: 1.1.1
 Date: 2016-09-26
 Author: Jeffrey D. Muehlbauer
 Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>

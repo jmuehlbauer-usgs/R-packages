@@ -127,7 +127,7 @@ LTprocessed<-Counts
 	
 	## Get species data for the samples
 	LTprocessed0<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample1$SampleID,collapse=", ",sep="")),")",sep=''))	
-	LTprocessed<-LTprocessed0[!is.na(LTprocessed0$Count),]
+	LTprocessed<-LTprocessed0[!is.na(LTprocessed0$RawCount),]
 
 	## Close database connection
 	odbcClose(channel)
