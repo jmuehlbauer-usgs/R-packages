@@ -126,9 +126,9 @@ LTprocessed<-Counts
 	colnames(LTsample1)[which(colnames(LTsample1) == 'AssociatedTrib?')] <- 'AssociatedTrib'
 	
 	## Get species data for the samples
-	LTprocessed0<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample1$SampleID,collapse=", ",sep="")),")",sep=''))	
-	LTprocessed<-LTprocessed0[!is.na(LTprocessed0[, 'Raw Count']),]
-
+	LTprocessed0<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample1$SampleID,collapse=", ",sep="")),")",sep=''))
+		colnames(LTprocessed0)[which(colnames(LTprocessed0)=='Estimated Count')] <- 'Count'
+	LTprocessed<-LTprocessed0[!is.na(LTprocessed0$Count),]
 	## Close database connection
 	odbcClose(channel)
 }
