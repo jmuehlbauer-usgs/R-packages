@@ -68,9 +68,7 @@ accessLT<-function(helper=FALSE,subcol,subval,prepull=FALSE,Samples,Counts,setSQ
 ## Run the function in prepull mode
 if(prepull==TRUE){
 LTsample<-Samples
-	colnames(LTsample)[1:2]<-c('SampleID','Barcode')
 LTprocessed<-Counts
-
 
 ## Query the database
 } else{
@@ -106,42 +104,51 @@ LTprocessed<-Counts
 			}
 		}
 	}
-	## Rename Sort ID column in LTsample to SampleID and BarcodeID column to Barcode
-	colnames(LTsample)[1:2]<-c('SampleID','Barcode')
-	
-	## Convert Open, close, and processing times to useable format, calculate trap duration
-	hrs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 1, 2)) * 60)
-	mins <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 3, 4)))
-	secs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 5, 6))/60)
-	LTsample$ProcessMinutes <- round(hrs + mins + secs, 2)
-	LTsample$TimeOpen <- strftime(LTsample$OpenTime, format = '%H:%M')
-	LTsample$TimeClose <- strftime(LTsample$CloseTime, format = '%H:%M')
-	LTsample$DurationMinutes <- as.numeric(difftime(LTsample$CloseTime, LTsample$OpenTime, units = 'mins'))
-	
-	## Create a column for temp (mostly open temp, with closed temps when open temps are unavailable).
-	LTsample$Temp <- ifelse(is.na(LTsample$OpenTemp), LTsample$CloseTemp, LTsample$OpenTemp)
-	
-	## Clean up sample info dataframe to contain only columns of interest
-	LTsample1 <- LTsample[ , c('SampleID', 'Barcode', 'DeploymentSite', 'SampleDate', 'TimeOpen', 'TimeClose', 'DurationMinutes', 'Collector', 'River', 'RiverMile', 'RiverSide', 'WxDescrip', 'Wind', 'WindDirection', 'Habitat', 'Temp', 'TrapLocation', 'DistanceFromCenterpoint', 'AssociatedTrib?', 'SampleNotes', 'RedFlag', 'Processor', 'ProcessMinutes', 'ProcessNotes')]
-	colnames(LTsample1)[which(colnames(LTsample1) == 'AssociatedTrib?')] <- 'AssociatedTrib'
-	
+
 	## Get species data for the samples
-	LTprocessed0<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample1$SampleID,collapse=", ",sep="")),")",sep=''))
-		colnames(LTprocessed0)[which(colnames(LTprocessed0)=='Estimated Count')] <- 'Count'
-	LTprocessed<-LTprocessed0[!is.na(LTprocessed0$Count),]
+	LTprocessed<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapProcess WHERE SampleID IN (",noquote(paste(LTsample$SortID,collapse=", ",sep="")),")",sep=''))
+	
 	## Close database connection
 	odbcClose(channel)
 }
 
+## Rename Sort ID column in LTsample to SampleID and BarcodeID column to Barcode, reset some column classes
+colnames(LTsample)[1:2]<-c('SampleID','Barcode')
+	class(LTsample$RedFlag) <- 'logical'
+
+## Rename Estimated Count column in LTprocess to Count, delete unneeded columns and rows and reset classes
+LTprocessed$Count <- LTprocessed$CountEstimated
+LTprocessed1 <- LTprocessed[!is.na(LTprocessed$CountEstimated),c('PickID', 'SampleID', 'SpeciesID', 'Count', 'SampleKept', 'Reference', 'TotalParts', 'SubsampledParts', 'Notes')]
+	class(LTprocessed1$SampleKept) <- 'logical'
+	class(LTprocessed1$Reference) <- 'logical'
+
+## Convert Open, close, and processing times to useable format, calculate trap duration
+hrs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 1, 2)) * 60)
+mins <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 3, 4)))
+secs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 5, 6))/60)
+LTsample$ProcessMinutes <- round(hrs + mins + secs, 2)
+LTsample$TimeOpen <- format(LTsample$OpenTime, format = '%H:%M')
+LTsample$TimeClose <- format(LTsample$CloseTime, format = '%H:%M')
+LTsample$SampleDate <- as.POSIXlt(LTsample$SampleDate[1], format = '%m/%d/%Y')
+LTsample$DurationMinutes <- as.numeric(difftime(strptime(format(LTsample$CloseTime, format = '%H:%M'), format = '%H:%M'), strptime(format(LTsample$OpenTime, format = '%H:%M'), format = '%H:%M'), units = 'mins'))
+	
+## Create a column for temp (mostly open temp, with closed temps when open temps are unavailable).
+LTsample$Temp <- ifelse(is.na(LTsample$OpenTemp), LTsample$CloseTemp, LTsample$OpenTemp)
+
+## Clean up sample info dataframe to contain only columns of interest
+LTsample1 <- LTsample[ , c('SampleID', 'Barcode', 'DeploymentSite', 'SampleDate', 'TimeOpen', 'TimeClose', 'DurationMinutes', 'Collector', 'River', 'RiverMile', 'RiverSide', 'WxDescrip', 'Wind', 'WindDirection', 'Habitat', 'Temp', 'TrapLocation', 'DistanceFromCenterpoint', 'AssociatedTrib', 'SampleNotes', 'RedFlag', 'Processor', 'ProcessMinutes', 'ProcessNotes')]
+	
 ## Create dataframe of all Sample IDs (rows) and possible Species (columns)
-ids<-sort(unique(LTprocessed$SampleID))
-spp<-sort(unique(LTprocessed$SpeciesID))
+ids<-sort(unique(LTprocessed1$SampleID))
+spp<-sort(unique(LTprocessed1$SpeciesID))
 tLT<-as.data.frame(matrix(nrow=length(ids),ncol=length(spp)+1))
 	colnames(tLT)<-c('SampleID',as.character(as.factor(spp)))
 	tLT$SampleID<-ids
-for(i in 1:dim(LTprocessed)[1]){
-	tmp<-LTprocessed[i,]
-	tLT[tLT$SampleID==tmp$SampleID,as.character(tmp$SpeciesID)]<-tmp$Count
+LTp <- LTprocessed1
+	LTp$SpeciesID <- as.character(LTprocessed1$SpeciesID)
+for(i in 1:dim(LTprocessed1)[1]){
+	tmp <- LTp[i,]
+	tLT[which(tLT$SampleID == tmp$SampleID), tmp$SpeciesID] <- tmp$Count
 }
 
 ## Clean up dataframe, converting variables to proper classes, removing No Bug data, and adding barcodes
@@ -151,12 +158,16 @@ LTmat<-cbind(LTmat0$SampleID,LTsample1$Barcode[match(LTmat0$SampleID,LTsample1$S
 	colnames(LTmat)[1:2]<-c('SampleID','Barcode')
 if('NOBU'%in%colnames(LTmat)){LTmat1<-subset(LTmat,select=-NOBU)
 } else{LTmat1<-LTmat}
-LTprocessed1<-cbind(LTprocessed[,1:2],LTsample1$Barcode[match(LTprocessed$SampleID,LTsample1$SampleID)],LTprocessed[,c(-1,-2)])
-	colnames(LTprocessed1)[3]<-'Barcode'
+LTprocessed2<-cbind(LTprocessed1[,1:2],LTsample1$Barcode[match(LTprocessed1$SampleID,LTsample1$SampleID)],LTprocessed1[,c(-1,-2)])
+	colnames(LTprocessed2)[3]<-'Barcode'
+	
+## Remove unprocessed samples from LTsample
+LTsample2 <- LTsample1[LTsample1$SampleID %in% LTmat1$SampleID, ]
+
 ## Assign dataframes to an output list, sort by SampleID
 LTlist<-list()
-LTlist$Info<-droplevels(LTsample1[order(LTsample1$SampleID),])
-LTlist$Counts<-droplevels(LTprocessed1[order(LTprocessed1$SampleID,LTprocessed1$PickID),])
+LTlist$Info<-droplevels(LTsample2[order(LTsample2$SampleID),])
+LTlist$Counts<-droplevels(LTprocessed2[order(LTprocessed2$SampleID,LTprocessed2$PickID),])
 LTlist$SppMat<-droplevels(LTmat1[order(LTmat1$SampleID),])
 
 ## End the function
