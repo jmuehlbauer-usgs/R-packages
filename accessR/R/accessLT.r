@@ -129,7 +129,7 @@ secs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 5, 6))/60)
 LTsample$ProcessMinutes <- round(hrs + mins + secs, 2)
 LTsample$TimeOpen <- format(LTsample$OpenTime, format = '%H:%M')
 LTsample$TimeClose <- format(LTsample$CloseTime, format = '%H:%M')
-LTsample$SampleDate <- as.POSIXlt(LTsample$SampleDate[1], format = '%m/%d/%Y')
+LTsample$SampleDate <- as.POSIXlt(LTsample$SampleDate, format = '%m/%d/%Y')
 LTsample$DurationMinutes <- as.numeric(difftime(strptime(format(LTsample$CloseTime, format = '%H:%M'), format = '%H:%M'), strptime(format(LTsample$OpenTime, format = '%H:%M'), format = '%H:%M'), units = 'mins'))
 	
 ## Create a column for temp (mostly open temp, with closed temps when open temps are unavailable).
