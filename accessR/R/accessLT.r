@@ -93,13 +93,37 @@ LTprocessed<-Counts
 				subNames<-names(sqlQuery(channel,"SELECT * FROM tbl_LightTrapSample WHERE SortID = 1"))
 					cat('\nYou can subset by any of these conditions:\n')
 					print(subNames)
-					cat('\nWhich condition would you like to subset by?\nEnter condition without quotes (e.g., BarcodeID). Or enter 1, without quotes, to get all data.\n')
-					a<-readline(prompt='Your entry:')
+					cat('\nWhich condition would you like to subset by?\nEnter condition without quotes (e.g., BarcodeID).\nFor multiple conditions, separate each by a comma (e.g., BarcodeID, River).\nOr enter 1, without quotes, to get all data.\n\n')
+					a<-readline(prompt='Your entry: ')
 				if(a[1]==1){LTsample<-sqlQuery(channel,"SELECT * FROM tbl_LightTrapSample")
 				} else{
-					cat('\nWhich values would you like to subset by?','\nEnter values of interest, each in quotes, separated by commas.\n')
-					b<-readline(prompt='Your entry:')
-					LTsample<-sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapSample WHERE ",a," IN (",noquote(b),")",sep=''))	
+					a1.0 <- gsub(", ", ",", a)
+						a1.1 <- strsplit(a1.0, ",")
+							a1 <- a1.1[[1]]
+							anum <- length(a1)
+					blist <- list()
+					cat("\nWhich values would you like to subset by?\nEnter values of interest, without quotes, separated by commas.\nOr enter the name of a vector that contains the values.\n\n")
+					for(i in 1:anum){
+						b <- readline(prompt = paste("Values for ", a1[i], ": ", sep = ""))
+						if(grepl(",", b) == FALSE){
+							beval <- try(eval(parse(text = b)),silent = TRUE)
+							if(inherits(beval, "try-error")){
+								beval <- b
+							}
+							blist[[i]] <- beval
+						} else{
+							b2.0 <- gsub(", ", ",", b)
+								b2.1 <- strsplit(b2.0, ",")
+									blist[[i]] <- b2.1[[1]]
+							}
+					}
+					b3 <- paste("'", paste(blist[[1]], collapse = "', '"), "'", sep = "")
+					LTsample <- sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapSample WHERE ", a1[1], " IN (", b3, ")", sep=''))
+						if(length(blist) > 1){
+							for(i in 2:length(blist)){
+							LTsample <- LTsample[LTsample[, a1[i]] %in% blist[[i]], ]
+							}
+						}
 				}
 			}
 		}
