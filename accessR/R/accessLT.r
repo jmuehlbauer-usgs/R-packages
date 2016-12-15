@@ -49,7 +49,7 @@
 #' ## If you want to subset the data, but you are not sure what conditions to use, then use the helper.
 #' foo3 <- accessLT(helper = TRUE)
 #'
-#' ## For pre-existing spredsheets already pulled fomr Access.
+#' ## For pre-existing spreadsheets already pulled from Access.
 #' ## For this example to work, you need spreadsheets titled \code{tbl_LightTrapSample.csv} and \code{tbl_LightTrapProcess.csv} already saved in your working directory. The can be exported directly from Access.
 #' samples <- read.csv('tbl_LightTrapSample.csv')
 #' counts <- read.csv('tbl_LightTrapProcess.csv')
@@ -90,7 +90,11 @@ LTprocessed<-Counts
 		
 			## Run function requesting user input for data subsetting
 			} else{
-				subNames<-names(sqlQuery(channel,"SELECT * FROM tbl_LightTrapSample WHERE SortID = 1"))
+				subc<-sqlQuery(channel,"SELECT * FROM tbl_LightTrapSample WHERE SortID = 1")
+					subNames <- colnames(subc)
+				classnum <- c(names(which(lapply(subc,class)=='integer')), names(which(lapply(subc,class)=='numeric')))
+				classdate <- c('SampleDate', 'ProcessDate')
+				classtime <- c('OpenTime', 'CloseTime')
 					cat('\nYou can subset by any of these conditions:\n')
 					print(subNames)
 					cat('\nWhich condition would you like to subset by?\nEnter condition without quotes (e.g., BarcodeID).\nFor multiple conditions, separate each by a comma (e.g., BarcodeID, River).\nOr enter 1, without quotes, to get all data.\n\n')
@@ -102,26 +106,121 @@ LTprocessed<-Counts
 							a1 <- a1.1[[1]]
 							anum <- length(a1)
 					blist <- list()
-					cat("\nWhich values would you like to subset by?\nEnter values of interest, without quotes, separated by commas.\nOr enter the name of a vector that contains the values.\n\n")
+					bsub <- list()
+					blistsub <- list()
 					for(i in 1:anum){
-						b <- readline(prompt = paste("Values for ", a1[i], ": ", sep = ""))
-						if(grepl(",", b) == FALSE){
-							beval <- try(eval(parse(text = b)),silent = TRUE)
-							if(inherits(beval, "try-error")){
-								beval <- b
-							}
-							blist[[i]] <- beval
+						if(a1[i] %in% classnum | a1[i] %in% classdate | a1[i] %in% classtime){
+							cat(paste('\nFor ', a1[i], ' do you want a range of values, or do you want to list specific values?\nEnter "range" or "list", without quotes.\n\n', sep = ''))
+							bsub[[i]] <- readline(prompt = 'Your entry: ')
 						} else{
-							b2.0 <- gsub(", ", ",", b)
-								b2.1 <- strsplit(b2.0, ",")
-									blist[[i]] <- b2.1[[1]]
+							bsub[[i]] <- 'list'
+						}
+						if(bsub[[i]] == 'range'){
+							if(a1[i] %in% classdate){
+							cat('Enter minimum and maximum values, without quotes.\nUse the format YYYY-MM-DD.\n\n')
+							bmin1 <- readline(prompt = paste("Minimum value for ", a1[i], ": ", sep = ""))
+							bmax1 <- readline(prompt = paste("Maximum value for ", a1[i], ": ", sep = ""))
+								bmin2 <- paste('#', bmin1, '#', sep = '')
+								bmax2 <- paste('#', bmax1, '#', sep = '')
+								blistsub[[i]] <- as.character(seq.Date(as.Date(bmin1), as.Date(bmax1), 1))
 							}
+							if(a1[i] %in% classtime){
+							cat('Enter minimum and maximum values, without quotes.\nUse 24-hour format hh:mm.\n\n')
+							bmin1 <- readline(prompt = paste("Minimum value for ", a1[i], ": ", sep = ""))
+							bmax1 <- readline(prompt = paste("Maximum value for ", a1[i], ": ", sep = ""))
+								bmin2 <- paste('#1899-12-30 ', bmin1, '#', sep = '')
+								bmax2 <- paste('#1899-12-30 ', bmax1, '#', sep = '')
+								bmin3 <- as.POSIXct(paste('1899-12-30',bmin1, sep = ''))
+								bmax3 <- as.POSIXct(paste('1899-12-30',bmax1, sep = ''))
+								blistsub[[i]] <- as.character(seq.POSIXt(bmin3,bmax3,'min'))
+							}
+							if(a1[i] %in% classnum){
+							cat('Enter minimum and maximum values, without quotes.\n\n')
+							bmin1 <- readline(prompt = paste("Minimum value for ", a1[i], ": ", sep = ""))
+							bmax1 <- readline(prompt = paste("Maximum value for ", a1[i], ": ", sep = ""))
+								bmin2 <- as.numeric(bmin1)
+								bmax2 <- as.numeric(bmax1)
+								blistsub[[i]] <- as.character(seq(bmin2, bmax2, 1))
+							}
+							blist[[i]] <- c(bmin2, bmax2)
+						} else{
+							if(a1[i] %in% classnum){
+								cat("\nWhich values would you like to subset by?\nEnter values of interest, without quotes, separated by commas.\nOr enter the name of a vector that contains the values.\n\n")
+								b <- readline(prompt = paste("Values for ", a1[i], ": ", sep = ""))							
+									if(grepl(",", b) == FALSE){
+										beval <- try(eval(parse(text = b)),silent = TRUE)
+										if(inherits(beval, "try-error")){
+											beval <- b
+										}
+										blist[[i]] <- beval
+										blistsub[[i]] <- as.character(beval)
+									} else{
+										b2.0 <- gsub(", ", ",", b)
+											b2.1 <- strsplit(b2.0, ",")
+												blist[[i]] <- b2.1[[1]]
+												blistsub[[i]] <- as.character(b2.1[[1]])
+									}
+							} else{
+								if(a1[i] %in% classdate){
+									cat("\nWhich values would you like to subset by?\nEnter values of interest, without quotes, separated by commas.\nOr enter the name of a vector that contains the values.\nUse the format YYYY-MM-DD.\n\n")
+									b <- readline(prompt = paste("Values for ", a1[i], ": ", sep = ""))
+										if(substr(b, 1, 1) %in% letters | substr(b, 1, 1) %in% LETTERS){
+											beval <- try(eval(parse(text = b)),silent = TRUE)	
+										} else{
+											beval <- b
+										}
+											b2.0 <- gsub(", ", ",", beval)
+												b2.1 <- unlist(strsplit(b2.0, ","))
+													blist[[i]] <- paste('#', b2.1, '#', sep = '')
+													blistsub[[i]] <- as.character(b2.1)
+								} else{
+									if(a1[i] %in% classtime){
+										cat("\nWhich values would you like to subset by?\nEnter values of interest, without quotes, separated by commas.\nOr enter the name of a vector that contains the values.\nUse 24-hour format hh:mm.\n\n")
+										b <- readline(prompt = paste("Values for ", a1[i], ": ", sep = ""))
+											if(substr(b, 1, 1) %in% letters | substr(b, 1, 1) %in% LETTERS){
+												beval <- try(eval(parse(text = b)),silent = TRUE)	
+											} else{
+												beval <- b
+											}
+												b2.0 <- gsub(", ", ",", beval)
+													b2.1 <- unlist(strsplit(b2.0, ","))
+														blist[[i]] <- paste('#1899-12-30 ', b2.1, '#', sep = '')								
+														blistsub[[i]] <- as.character(as.POSIXct(paste('1899-12-30 ', b2.1, sep = '')))							
+									} else{
+										cat("\nWhich values would you like to subset by?\nEnter values of interest, without quotes, separated by commas.\nOr enter the name of a vector that contains the values.\n\n")
+										b <- readline(prompt = paste("Values for ", a1[i], ": ", sep = ""))
+										if(grepl(",", b) == FALSE){
+											beval <- try(eval(parse(text = b)),silent = TRUE)
+											if(inherits(beval, "try-error")){
+												beval <- b
+											}
+											blist[[i]] <- beval
+											blistsub[[i]] <- as.character(beval)
+										} else{
+										b2.0 <- gsub(", ", ",", b)
+											b2.1 <- strsplit(b2.0, ",")
+												blist[[i]] <- b2.1[[1]]
+												blistsub[[i]] <- as.character(b2.1[[1]])						
+										}
+									}
+								}
+							}
+						}
 					}
-					b3 <- paste("'", paste(blist[[1]], collapse = "', '"), "'", sep = "")
-					LTsample <- sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapSample WHERE ", a1[1], " IN (", b3, ")", sep=''))
+					if(a1[1] %in% classnum | a1[1] %in% classdate | a1[1] %in% classtime){
+						if(bsub[[1]]=='range'){
+							LTsample <- sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapSample WHERE ", a1[1], " >= ", blist[[1]][1], " AND ", a1[1], " <= ", blist[[1]][2], sep=''))
+						} else{
+							b3 <- paste(blist[[1]], collapse = ", ")
+							LTsample <- sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapSample WHERE ", a1[1], " IN (", b3, ")", sep=''))
+						}
+					} else{
+						b3 <- paste("'", paste(blist[[1]], collapse = "', '"), "'", sep = "")
+						LTsample <- sqlQuery(channel,paste("SELECT * FROM tbl_LightTrapSample WHERE ", a1[1], " IN (", b3, ")", sep=''))
+					}
 						if(length(blist) > 1){
 							for(i in 2:length(blist)){
-							LTsample <- LTsample[LTsample[, a1[i]] %in% blist[[i]], ]
+								LTsample <- LTsample[as.character(LTsample[, a1[i]]) %in% blistsub[[i]], ]
 							}
 						}
 				}
@@ -135,6 +234,10 @@ LTprocessed<-Counts
 	## Close database connection
 	odbcClose(channel)
 }
+
+## Error out if subsetting results in no data
+if(dim(LTsample)[1] == 0){cat('Error: No valid data found for these conditions!\n')
+} else{
 
 ## Rename Sort ID column in LTsample to SampleID and BarcodeID column to Barcode, reset some column classes
 colnames(LTsample)[1:2]<-c('SampleID','Barcode')
@@ -153,7 +256,7 @@ secs <- suppressWarnings(as.numeric(substr(LTsample$ProcessTime, 5, 6))/60)
 LTsample$ProcessMinutes <- round(hrs + mins + secs, 2)
 LTsample$TimeOpen <- format(LTsample$OpenTime, format = '%H:%M')
 LTsample$TimeClose <- format(LTsample$CloseTime, format = '%H:%M')
-LTsample$SampleDate <- as.POSIXlt(LTsample$SampleDate, format = '%m/%d/%Y')
+LTsample$SampleDate <- as.Date(LTsample$SampleDate, format = '%m/%d/%Y')
 LTsample$DurationMinutes <- as.numeric(difftime(strptime(format(LTsample$CloseTime, format = '%H:%M'), format = '%H:%M'), strptime(format(LTsample$OpenTime, format = '%H:%M'), format = '%H:%M'), units = 'mins'))
 	
 ## Create a column for temp (mostly open temp, with closed temps when open temps are unavailable).
@@ -178,8 +281,10 @@ for(i in 1:dim(LTprocessed1)[1]){
 ## Clean up dataframe, converting variables to proper classes, removing No Bug data, and adding barcodes
 LTmat0<-tLT
 LTmat0[is.na(LTmat0)]<-0
-LTmat<-cbind(LTmat0$SampleID,LTsample1$Barcode[match(LTmat0$SampleID,LTsample1$SampleID)],LTmat0[,-1])
-	colnames(LTmat)[1:2]<-c('SampleID','Barcode')
+LTmat<-data.frame(LTmat0$SampleID,LTsample1$Barcode[match(LTmat0$SampleID,LTsample1$SampleID)],LTmat0[,-1])
+	#colnames(LTmat[-2]) <- colnames(tLT)
+	#colnames(LTmat[2]) <- 'BarcodeID'
+	colnames(LTmat) <- c(colnames(tLT[1]), 'BarcodeID', colnames(tLT)[2:length(colnames(tLT))])
 if('NOBU'%in%colnames(LTmat)){LTmat1<-subset(LTmat,select=-NOBU)
 } else{LTmat1<-LTmat}
 LTprocessed2<-cbind(LTprocessed1[,1:2],LTsample1$Barcode[match(LTprocessed1$SampleID,LTsample1$SampleID)],LTprocessed1[,c(-1,-2)])
@@ -193,10 +298,10 @@ LTlist<-list()
 LTlist$Info<-droplevels(LTsample2[order(LTsample2$SampleID),])
 LTlist$Counts<-droplevels(LTprocessed2[order(LTprocessed2$SampleID,LTprocessed2$PickID),])
 LTlist$SppMat<-droplevels(LTmat1[order(LTmat1$SampleID),])
+	if(dim(LTlist$SppMat)[2] <= 2) {LTlist$SppMat <- NA}
 
 ## End the function
 if(dim(LTlist$Info)[1]<1){stop("No data could be pulled based on the conditions you specified!\n  Perhaps you subset on conditions that don't exist?") 
 } else {cat('\nAll done! The result is a list with the following elements:\n Info: A dataframe of sample information by barcode\n Counts: A dataframe of species counts by pick ID\n SppMat: A dataframe of species counts by barcode\n\n')}
 return(LTlist)
-}
-
+}}

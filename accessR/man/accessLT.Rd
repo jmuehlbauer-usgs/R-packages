@@ -55,7 +55,7 @@ foo2 <- accessLT(subcol = "BarcodeID", subval = c("L00262", "L00263"))
 ## If you want to subset the data, but you are not sure what conditions to use, then use the helper.
 foo3 <- accessLT(helper = TRUE)
 
-## For pre-existing spredsheets already pulled fomr Access.
+## For pre-existing spreadsheets already pulled from Access.
 ## For this example to work, you need spreadsheets titled \\code{tbl_LightTrapSample.csv} and \\code{tbl_LightTrapProcess.csv} already saved in your working directory. The can be exported directly from Access.
 samples <- read.csv('tbl_LightTrapSample.csv')
 counts <- read.csv('tbl_LightTrapProcess.csv')
