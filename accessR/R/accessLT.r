@@ -72,7 +72,7 @@ LTprocessed<-Counts
 
 ## Query the database
 } else{
-	channel<-odbcConnectAccess2007('M:/FOODBASE/Database/Foodbase.accdb')
+	channel<-odbcConnectAccess2007('P:/Biological/Foodbase/Database/Foodbase.accdb')
 
 	## Run the function in advanced mode
 	if(!missing(setSQL)){
