@@ -93,7 +93,7 @@ if(is.null(dim(spec))){
 		if(path == 'GitHub'){
 			spec0 <- read.csv(paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/', gear, 'Specimen.csv'))		
 		} else{
-			spec0 <- read.csv(paste0(path, gear, '/Specimen.csv'))
+			spec0 <- read.csv(paste0(path, '/', gear, 'Specimen.csv'))
 		}
 	}
 } else{
