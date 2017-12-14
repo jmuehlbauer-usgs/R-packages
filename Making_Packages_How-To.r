@@ -1,4 +1,4 @@
-##### Create an R package #####
+##### Create and install an R package #####
 
 ##### Set working directory, create folder, load libraries
 
@@ -67,4 +67,5 @@ git push origin master
 ##### Download and install the package from GitHUB #####
 
 ## Other users can now install the package from GitHub:
+require(devtools)
 install_github(repo='jmuehlbauer-usgs/R-packages',subdir='TEST')

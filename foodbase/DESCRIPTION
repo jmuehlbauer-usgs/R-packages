@@ -1,0 +1,16 @@
+Package: foodbase
+Title: Functions for Reading and Working with Foodbase Data
+Version: 1.0
+Date: 2017-12-13
+Author: Jeffrey D. Muehlbauer
+Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
+Description: This packages contains some functions for importing and working 
+	with data from the Foodbase database. Specifically, it contains the function 
+	readDB to read in data without fanfare, and function foodbase for reading and
+	formatting the data. Currently only implemented for Drift data, with support
+	for other gear types hopefully coming soon!
+Depends:
+    R (>= 3.2.1)
+License: GPL-3
+URL: https://github.com/jmuehlbauer-usgs/R-packages
+RoxygenNote: 6.0.1
