@@ -69,7 +69,7 @@
 
 ## Function call
 foodbase <- function(gear = "Drift", path = "Network", samp = "", spec = "", sppl = "", species = "All"){
-
+	##Need to add code to search for path.
 ## Read in sample data
 if(is.null(dim(samp))){
 	if(path == 'Network'){
