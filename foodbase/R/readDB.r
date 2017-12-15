@@ -40,21 +40,30 @@
 #' @export
 
 ## Function call
-readDB <- function(gear = "Drift", type = "Sample", path = "Network"){
+readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
 
-## Set the file path to USGS P drive, GitHub repository, or a different, specified path
-if(path == 'Network'){
-	path1 <- 'P:/BIOLOGICAL/Foodbase/Database/Exports/'	
-} else {
-	if(path == 'GitHub'){
-		path1 <- 'https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/'
-	} else {
-		path1 <- paste0(path, '/')
-	}
+## Check if the Data folder of foodbase package install location exists
+dbdir <- paste0(find.package('foodbase'),'/Data')
+dbdir.exists <- dir.exists(path = dbdir)
+
+## Update/add data as necessary
+if(dbdir.exists == FALSE | updater != FALSE){
+	if(updater == 'GitHub'){
+		path <- paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/')		
+	} else{
+		path <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')	
+	} 	
+	dir.create(dbdir, showWarnings = FALSE)
+	samp <- read.csv(paste0(path, gear, 'Sample.csv'))
+	spec <- read.csv(paste0(path, gear, 'Specimen.csv'))
+	sppl <- read.csv(paste0(path, 'SppList.csv'))
+	write.csv(samp,paste0(dbdir,'/', gear, 'Sample.csv'), row.names = FALSE)
+	write.csv(spec,paste0(dbdir,'/', gear, 'Specimen.csv'), row.names = FALSE)
+	write.csv(sppl,paste0(dbdir,'/', 'SppList.csv'), row.names = FALSE)
 }
 
 ## Read in the data,type
-dat <- read.csv(paste0(path1, gear, type, '.csv'))
+dat <- read.csv(paste0(dbdir, '/', gear, type, '.csv'))
 return(dat)
 
 ## Close function
