@@ -37,7 +37,7 @@
 #' ## Work with existing drift sample data, with no update (all the defaults).
 #' loc <- readDB()
 
-#' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
+#' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
 
 #' @export
 
@@ -65,7 +65,7 @@ if(dbdir.exists == FALSE | updater != FALSE){
 }
 
 ## Read in the data
-if(type = 'SppList'){
+if(type == 'SppList'){
 dat <- read.csv(paste0(dbdir, '/SppList.csv'))
 } else{
 dat <- read.csv(paste0(dbdir, '/', gear, type, '.csv'))

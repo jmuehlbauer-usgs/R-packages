@@ -4,14 +4,14 @@
 \alias{readDB}
 \title{Read in sample and specimen data from the Foodbase database.}
 \usage{
-readDB(gear = "Drift", type = "Sample", path = "Network")
+readDB(gear = "Drift", type = "Sample", updater = FALSE)
 }
 \arguments{
 \item{gear}{The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Default is \code{Drift}.}
 
-\item{type}{Whether to download \code{Sample} or \code{Specimen} data. Default is \code{Sample}.}
+\item{type}{Whether to download \code{Sample}, \code{Specimen} or  \code{SppList} (the master species list) data. Default is \code{Sample}.}
 
-\item{path}{The download location of the data on the \code{Network}, on \code{GitHub}, or elsewhere. Default is \code{Network}.}
+\item{updater}{Whether to download new versions of the Sample, Specimen, and Species List data, and from what source. See details. Default is \code{FALSE}.}
 }
 \value{
 Creates a dataframe containing the desired data from the Foodbase database.
@@ -22,13 +22,15 @@ Pulls exported data from the Foodbase database for use in R.
 \details{
 Currently only \code{Drift} is implemented for \code{gear}.
 
-The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information) or \code{Specimen} data (i.e., bug counts and sizes, where relevant). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{foodbase}} function will be faster, and more useful (see examples).
+The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information), \code{Specimen} data (i.e., bug counts and sizes, where relevant), or \code{SppList} data (i.e., the master species list). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{foodbase}} function will be faster, and more useful (see examples).
 
-The \code{path} argument is helpful if you are off the USGS network, in which case data can be downloaded from the web by specifying \code{path = "GitHub"}. Note that data are not routinely pushed to GitHub, however, so the data there may be slightly dated. Alternately, you can specify \code{path} to a local directory (see examples).
+Regardless of the \code{updater} setting, \code{readDB} checks for a local copy of the \code{Sample}, \code{Specimen}, and \code{SppList} data in the \code{Data} folder of the \code{foodbase} package, and will install these three files there if they are not present (these local copies are what is used for other functions within the \code{foodbase} package). Using \code{updater} will update all three of these files, regardless of what data type is specified by \code{type}. 
+
+If not set to \code{FALSE}, the \code{updater} can be set to download new data from the \code{Network} (if \code{TRUE} or \code{Network}), or from \code{GitHub}.
 }
 \examples{
-## Read in drift sample data from the network (all the defaults).
-foo <- readDB()
+## Read in drift sample data from the network.
+foo <- readDB(gear = "Drift", type = "Sample", updater = TRUE)
 
 ## Subset only data from Lees Ferry
 foo2 <- foo[foo$Reach == "CRLeesFerry",]
@@ -36,17 +38,17 @@ foo2 <- foo[foo$Reach == "CRLeesFerry",]
 ## Get the specimen data for these samples, all wrapped together and formatted nicely.
 foo3 <- foodbase(samp = foo2)
 
-## Or, if you don't like shiny things, get the specimen data from GitHub.
-fugly <- readDB(type = "Specimen", path = "GitHub")
+## Or, if you don't like shiny things, get the raw specimen data only.
+fugly <- readDB(type = "Specimen")
 
-## Example of data stored in a local directory.
-loc <- readDB(path = "C:/Users/nflanders/Documents/Analysis/")
+## Work with existing drift sample data, with no update (all the defaults).
+loc <- readDB()
 }
 \seealso{
 \code{\link{foodbase}}, which provides more powerful formatting for working with data from the Foodbase database.
 }
 \author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
 }
 \concept{
 access, database
