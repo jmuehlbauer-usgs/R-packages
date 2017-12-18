@@ -173,23 +173,6 @@ spec4 <- subset(spec3, select = -Notes)
 	spec4$Biomass <- round(mapply(function(x,y,z) sum(y*x^z), lsize1, regs$RegressionA, regs$RegressionB), 2)
 	spec4$Notes <- spec3$Notes
 
-## Matrices for counts, size means, medians, standard deviations, and biomass
-mat0 <- matrix(data = 0, nrow = dim(samp2)[1], ncol = dim(sppl2)[1])
-	dimnames(mat0) <- list(sort(samp2$BarcodeID), sort(sppl2$SpeciesID))
-mat0[as.matrix(spec4[1:2])] <- spec4$CountTotal
-ctdat1 <- as.data.frame(mat0)
-mat0[mat0 == 0] <- NA
-mat0[as.matrix(spec4[1:2])] <- spec4$SizeMean
-	mndat1 <- as.data.frame(mat0)
-mat0[as.matrix(spec4[1:2])] <- spec4$SizeMedian
-	mddat1 <- as.data.frame(mat0)
-mat0[as.matrix(spec4[1:2])] <- spec4$SizeSD
-	sddat1 <- as.data.frame(mat0)
-mat0[as.matrix(spec4[1:2])] <- spec4$Biomass
-	bidat1 <- as.data.frame(mat0)
-	bidat1[,colSums(bidat1, na.rm = TRUE) > 0][is.na(bidat1[,colSums(bidat1, na.rm = TRUE) > 0])] <- 0
-	bidat2 <- bidat1[,colSums(bidat1, na.rm = TRUE) > 0]
-
 ## Get stats by sample, across a variety of metrics
 stat1 <- data.frame(samp2$BarcodeID)
 	colnames(stat1) <- 'BarcodeID'
