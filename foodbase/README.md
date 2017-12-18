@@ -3,7 +3,7 @@
 
 This packages contains some functions for importing and working with data from the Foodbase database. Currently only implemented for Drift data, with support for other gear types hopefully coming soon!
 
-__Current list of functions__
+__Current list of functions:__  
 readDB: Pulls exported data from the Foodbase database for use in R.  
 sampspec: Pulls exported data from the Foodbase database for use in R, combines Sample, Specimen, and Species code data, and formats the data to facilitate analysis.  
 sampstats: Runs some simple statistics on formatted data sets from the Foodbase database.  
