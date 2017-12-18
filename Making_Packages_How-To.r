@@ -47,6 +47,14 @@ install('TEST')
 library(TEST)
 testfx()
 
+##### Shortcut code for foodbase package update #####
+
+## Document and install the foodbase function
+setwd('C:/Users/jmuehlbauer/Documents/R/Custom/foodbase')
+document()
+setwd('..')
+install('foodbase')
+
 
 ##### Set up the local repository using GitBASH #####
 
@@ -56,6 +64,31 @@ cd "C:/Users/jmuehlbauer/Documents/R/Custom"
 git init
 git add TEST/
 git commit -m "Initial commit"
+## Can also add all tracked files and commit using
+git commit -a -m "Something"
+
+## Add a file
+git add working.txt
+
+## Remove a file
+git rm working.txt
+
+## Create a branch
+git branch foodbase_working
+
+## Change branches
+git checkout foodbase_working
+git checkout master
+
+## Push to a branch
+git push origin foodbase_working
+
+## Delete a branch
+git branch -d foodbase_working
+
+## Merge branches
+git checkout master
+git merge foodbase_working
 
 ## Push to a GitHub repository
 git remote add origin https://github.com/jmuehlbauer-usgs/R-packages.git
