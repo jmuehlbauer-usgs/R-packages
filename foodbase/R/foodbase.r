@@ -230,21 +230,17 @@ if(dim(spec4D)[1] > 0){
 	stat1[, c('SizeAqDiptMean', 'SizeAqDiptMed', 'SizeAqDiptSD')] <- NA
 }
 stat2 <- stat1[,c('BarcodeID', 'CountTotal', 'CountAqInvert', 'CountAqInsect', 'CountEPT', 'CountAqDipt', 'RichTotal', 'RichAqInvert', 'RichAqInsect', 'RichEPT', 'RichAqDipt', 'BiomassTotal', 'BiomassAqInvert', 'BiomassAqInsect', 'BiomassEPT', 'BiomassAqDipt', 'SizeTotalMean', 'SizeAqInvertMean', 'SizeAqInsectMean', 'SizeEPTMean', 'SizeAqDiptMean', 'SizeTotalMed', 'SizeAqInvertMed', 'SizeAqInsectMed', 'SizeEPTMed', 'SizeAqDiptMed', 'SizeTotalSD', 'SizeAqInvertSD', 'SizeAqInsectSD', 'SizeEPTSD', 'SizeAqDiptSD')]
+
 ## Create and spit out list, close function
 lout <- list()
 	lout[[1]] <- samp2
 	lout[[2]] <- spec4
 	lout[[3]] <- stat2
-	lout[[4]] <- ctdat1
-	lout[[5]] <- mndat1
-	lout[[6]] <- mddat1
-	lout[[7]] <- sddat1
-	lout[[8]] <- bidat2
-	lout[[9]] <- sppl2
-	lout[[10]] <- sampM
-	lout[[11]] <- sampD
-	lout[[12]] <- specD
-	names(lout) <- c('Samp', 'Spec', 'Stats', 'Counts', 'SizeMeans', 'SizeMedians', 'SizeSDs', 'Biomass', 'Spp', 'Missing', 'SampDel', 'SpecDel')
+	lout[[4]] <- sppl2
+	lout[[5]] <- sampM
+	lout[[6]] <- sampD
+	lout[[7]] <- specD
+	names(lout) <- c('Samples', 'Specimens', 'Statistics', 'Taxa', 'Missing', 'SampDel', 'SpecDel')
 return(lout)
 }
 

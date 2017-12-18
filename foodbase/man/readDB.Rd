@@ -22,7 +22,7 @@ Pulls exported data from the Foodbase database for use in R.
 \details{
 Currently only \code{Drift} is implemented for \code{gear}.
 
-The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information), \code{Specimen} data (i.e., bug counts and sizes, where relevant), or \code{SppList} data (i.e., the master species list). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{foodbase}} function will be faster, and more useful (see examples).
+The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information), \code{Specimen} data (i.e., bug counts and sizes, where relevant), or \code{SppList} data (i.e., the master species list). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{sampspec}} function will be faster, and more useful (see examples).
 
 Regardless of the \code{updater} setting, \code{readDB} checks for a local copy of the \code{Sample}, \code{Specimen}, and \code{SppList} data in the \code{Data} folder of the \code{foodbase} package, and will install these three files there if they are not present (these local copies are what is used for other functions within the \code{foodbase} package). Using \code{updater} will update all three of these files, regardless of what data type is specified by \code{type}. 
 
@@ -36,7 +36,7 @@ foo <- readDB(gear = "Drift", type = "Sample", updater = TRUE)
 foo2 <- foo[foo$Reach == "CRLeesFerry",]
 
 ## Get the specimen data for these samples, all wrapped together and formatted nicely.
-foo3 <- foodbase(samp = foo2)
+foo3 <- sampspec(samp = foo2)
 
 ## Or, if you don't like shiny things, get the raw specimen data only.
 fugly <- readDB(type = "Specimen")
@@ -45,7 +45,7 @@ fugly <- readDB(type = "Specimen")
 loc <- readDB()
 }
 \seealso{
-\code{\link{foodbase}}, which provides more powerful formatting for working with data from the Foodbase database.
+\code{\link{sampspec}}, which provides more powerful formatting for working with data from the Foodbase database.
 }
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
