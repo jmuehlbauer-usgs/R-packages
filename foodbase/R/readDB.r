@@ -37,7 +37,7 @@
 #' ## Work with existing drift sample data, with no update (all the defaults).
 #' loc <- readDB()
 
-#' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
+#' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael Dodrill, \email{mdodrill@usgs.gov}
 
 #' @export
 
