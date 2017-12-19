@@ -48,7 +48,7 @@ loc <- readDB()
 \code{\link{sampspec}}, which provides more powerful formatting for working with data from the Foodbase database.
 }
 \author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael Dodrill, \email{mdodrill@usgs.gov}
 }
 \concept{
 access, database
