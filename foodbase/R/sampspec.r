@@ -131,20 +131,24 @@ spec2 <- spec1[spec1$BarcodeID %in% samp0$BarcodeID, ]
 samp1 <- samp0[samp0$BarcodeID %in% spec2$BarcodeID, ]
 sampM <- samp0[!(samp0$BarcodeID %in% spec2$BarcodeID), ]
 	sampM <- droplevels(sampM)
-	rownames(sampM) <- 1:dim(sampM)[1]
-
+	if(dim(sampM)[1] > 0){
+		rownames(sampM) <- 1:dim(sampM)[1]
+	}
 ## Cut samples and specimens that were flagged for deletion
 samp2 <- samp1[samp1$FlagDelete != 1, ]
 	samp2 <- droplevels(samp2)
 sampD <- samp1[samp1$FlagDelete == 1, ]
 	sampD <- droplevels(sampD)
-	rownames(sampD) <- 1:dim(sampD)[1]
+	if(dim(sampD)[1] > 0){
+		rownames(sampD) <- 1:dim(sampD)[1]
+	}
 spec3 <- spec2[spec2$BarcodeID %in% samp2$BarcodeID, ]
 	spec3 <- droplevels(spec3)
 specD <- spec2[spec2$BarcodeID %in% sampD$BarcodeID, ]
 	specD <- droplevels(specD)
-	rownames(specD) <- 1:dim(specD)[1]
-
+	if(dim(specD)[1] > 0){
+		rownames(specD) <- 1:dim(specD)[1]
+	}
 ## Subset species list, reduce to only columns of interest
 sppl1 <- sppl0[sppl0$SpeciesID %in% spec3$SpeciesID,]
 sppl2 <- sppl1[, c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Habitat', 'Stage', 'FFG', 'Description', 'CommonName', 'RegressionA', 'RegressionB', 'Notes')]
