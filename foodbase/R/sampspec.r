@@ -154,38 +154,58 @@ sppl1 <- sppl0[sppl0$SpeciesID %in% spec3$SpeciesID,]
 sppl2 <- sppl1[, c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Habitat', 'Stage', 'FFG', 'Description', 'CommonName', 'RegressionA', 'RegressionB', 'Notes')]
 	sppl2 <- droplevels(sppl2)
 	rownames(sppl2) <- 1:dim(sppl2)[1]
-
-## Get biomasses for each size class, taxon, and site
+	
+## Add implicit 0 taxa counts into data, remove NOBUs
 spec4 <- spec3[, c('BarcodeID', 'SpeciesID', 'Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
-	rownames(spec4) <- 1:dim(spec4)[1]
-specB <- spec3[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+combs <- data.frame(BarcodeID = rep(sort(unique(samp2$BarcodeID)), rep(length(unique(spec4$SpeciesID)), length(unique(samp2$BarcodeID)))), SpeciesID = rep(sort(unique(spec4$SpeciesID)), length(unique(samp2$BarcodeID))))
+combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in% paste(spec4$BarcodeID, spec4$SpeciesID) == FALSE,]
+spec5 <- rbind.fill(spec4, combs1)
+	spec5[is.na(spec5)] <- 0
+spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
+spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID),]
+	rownames(spec7) <- 1:dim(spec7)[1]
+	spec7 <- droplevels(spec7)
+	
+## Get biomasses for each size class, taxon, and site
+sppregs <- sppl2[!is.na(sppl2$RegressionA) & !is.na(sppl2$RegressionB), 'SpeciesID']
+regs <- spec7[spec7$SpeciesID %in% sppregs,]
+specB <- regs[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
 reps <- c(0.5, 1:20)
 lsize1 <- apply(specB, 1, function(x) rep(reps, x))
-regs <- sppl1[match(spec3$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
-biom1 <- round((specB^regs$RegressionB)*regs$RegressionA, 2)
-	biomsum <- rowSums(biom1, na.rm = TRUE)
-biom2 <- spec3[, c('BarcodeID', 'SpeciesID', 'Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+ABs <- sppl2[match(regs$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
+biom1 <- round((specB^ABs$RegressionB)*ABs$RegressionA, 2)
+	biomsum <- rowSums(biom1)
+biom2 <- regs
 	biom2[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')] <- biom1
-biom3 <- biom2[which(biomsum > 0),]
+biom3 <- biom2[!is.na(biomsum),]
 	rownames(biom3) <- 1:dim(biom3)[1]
 	biom3 <- droplevels(biom3)
 
 ## Combine all summary stats into a dataframe
 if(stats == FALSE){
-stat1 <- 'Statistics not computed (stats = FALSE).'
+stat3 <- 'Statistics not computed (stats = FALSE).'
 } else{
+specB2 <- spec3[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
 stat1 <- spec3[, c('BarcodeID', 'SpeciesID', 'CountTotal')]
-	stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize1, function(x) c(mean(x), median(x), sd(x)))), 2)
-	stat1$BiomassTotal <- rowSums(biom1, na.rm = TRUE)
+	stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x) c(mean(x), median(x), sd(x)))), 2)
+	stat1$BiomassTotal <- biomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), paste(regs$BarcodeID, regs$SpeciesID))]
 	stat1$Notes <- spec3$Notes
+stat2 <- rbind.fill(stat1, combs1)
+	stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
+	stat2$Notes[is.na(stat2$Notes)] <- ''
+	stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal) & stat2$SpeciesID %in% sppregs, 0, stat2$BiomassTotal)
+stat3 <- stat2[stat2$SpeciesID != 'NOBU',]
+	rownames(stat3) <- 1:dim(stat3)[1]
+	stat3 <- droplevels(stat3)
 }
 
 ## Create and spit out list, close function
 lout <- list()
 	lout[[1]] <- samp2
-	lout[[2]] <- spec4
+	lout[[2]] <- spec7
 	lout[[3]] <- biom3
-	lout[[4]] <- stat1
+	lout[[4]] <- stat3
 	lout[[5]] <- sppl2
 	lout[[6]] <- sampM
 	lout[[7]] <- sampD

@@ -50,6 +50,8 @@ testfx()
 ##### Shortcut code for foodbase package update #####
 
 ## Document and install the foodbase function
+require(devtools)
+require(roxygen2)
 setwd('C:/Users/jmuehlbauer/Documents/R/Custom/foodbase')
 document()
 setwd('..')
