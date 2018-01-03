@@ -183,7 +183,7 @@ biom3 <- biom2[!is.na(biomsum),]
 
 ## Combine all summary stats into a dataframe
 if(stats == FALSE){
-stat3 <- 'Statistics not computed (stats = FALSE).'
+stat4 <- 'Statistics not computed (stats = FALSE).'
 } else{
 specB2 <- spec3[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
 lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
@@ -196,8 +196,9 @@ stat2 <- rbind.fill(stat1, combs1)
 	stat2$Notes[is.na(stat2$Notes)] <- ''
 	stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal) & stat2$SpeciesID %in% sppregs, 0, stat2$BiomassTotal)
 stat3 <- stat2[stat2$SpeciesID != 'NOBU',]
-	rownames(stat3) <- 1:dim(stat3)[1]
-	stat3 <- droplevels(stat3)
+stat4 <- stat3[order(stat3$BarcodeID, stat3$SpeciesID),]
+	rownames(stat4) <- 1:dim(stat4)[1]
+	stat4 <- droplevels(stat4)
 }
 
 ## Create and spit out list, close function
@@ -205,7 +206,7 @@ lout <- list()
 	lout[[1]] <- samp2
 	lout[[2]] <- spec7
 	lout[[3]] <- biom3
-	lout[[4]] <- stat3
+	lout[[4]] <- stat4
 	lout[[5]] <- sppl2
 	lout[[6]] <- sampM
 	lout[[7]] <- sampD

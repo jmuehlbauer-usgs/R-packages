@@ -13,7 +13,7 @@
 
 #' @return Creates a dataframe containing totaled counts, richness, mean/median/standard deviation in size, and biomass for each sample, as well as the same values for aquatic invertebrates, aquatic insects, EPT taxa, and aquatic Diptera.
 
-#' @seealso \code{\link{sampspec}}, for creating the input list required for making \code{ordmat} work.
+#' @seealso \code{\link{sampspec}}, for creating the input list required for making \code{sampstats} work.
 
 #' @concept access, database
 
