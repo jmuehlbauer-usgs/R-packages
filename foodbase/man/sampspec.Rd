@@ -23,15 +23,19 @@ sampspec(gear = "Drift", samp = "", spec = "", sppl = "",
 \value{
 Creates a list containing the following dataframes:\cr
 \code{Samples}: The sample data.\cr
-\code{Specimens}: The specimen size data.\cr
-\code{Biomass}: The specimen biomass data.\cr
-\code{Statistics}: Total count, size, and biomass data, by specimen (if \code{stats = TRUE}).\cr
+\code{Specimens}: The specimen size data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
+\code{Biomass}: The specimen biomass data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
+\code{Specimens}: The specimen size data, excluding any Count Extra counts.\cr
+\code{Biomass}: The specimen biomass data, excluding any Count Extra counts..\cr
 \code{Taxa}: The taxa list of taxa in the dataset.\cr
 \code{Missing}: Sample data for any samples that don't have corresponding specimen data (or the species of interest) and were cut from the dataframes listed above.\cr
 \code{SampDel}: Sample data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.\cr
-\code{SpecDel}: Specimen data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.
+\code{SpecDel}: Specimen data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.\cr
+\code{Statistics}: Total count, size, and biomass data, by specimen (if \code{stats = TRUE}).
 
 Note on units: All biomass values are in \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m}, \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}. \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal \code{hours}.
+
+Note on compatibility: If you plan to use \code{\link{sampstats}} or \code{\link{ordmat}} on the \code{sampspec} output, then set \code{stats = TRUE}.
 }
 \description{
 Pulls exported data from the Foodbase database for use in R, combines Sample, Specimen, and Species code data, and formats the data to facilitate analysis.
@@ -48,22 +52,22 @@ In general, it is best to use the companion function \code{\link{readDB}} first 
 Using \code{species} you can return data for only certain taxa of interest. In addition to choosing species individually (e.g., \code{species = "CHIL"} or \code{species = c("CHIL", "SIML"}, you can also use the shortcut \code{species = "Big4"} to subset only for species codes \code{CHIL}, \code{SIML}, \code{NZMS}, and \code{GAM}.
 }
 \examples{
-## Read in drift sample data from the network, and update sample, specimen, and species list data.
+# Read in drift sample data from the network, and update sample, specimen, and species list data.
 foo <- readDB(updater = TRUE)
 
-## Subset only data from Lees Ferry
+# Subset only data from Lees Ferry
 foo2 <- foo[foo$Reach == "CRLeesFerry",]
 
-## Get the specimen data for these samples, all wrapped together and formatted nicely.
+# Get the specimen data for these samples, all wrapped together and formatted nicely.
 foo3 <- sampspec(samp = foo2)
 
-## Example to get these data and also show (separately) data that were cut
+# Example to get these data and also show (separately) data that were cut
 foo4 <- sampspec(samp = foo2, bads = TRUE)
 
-## Or, if you want to analyze all drift data in the database for inexplicable some reason:
+# Or, if you want to analyze all drift data in the database for inexplicable some reason:
 whyme <- sampspec(gear = "Drift")
 
-## Example to get only drift samples with New Zealand mudsnails.
+# Example to get only drift samples with New Zealand mudsnails.
 nzms <- sampspec(species = "NZMS")
 }
 \seealso{

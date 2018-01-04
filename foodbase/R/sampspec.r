@@ -22,15 +22,20 @@
 
 #' @return Creates a list containing the following dataframes:\cr
 #' \code{Samples}: The sample data.\cr
-#' \code{Specimens}: The specimen size data.\cr
-#' \code{Biomass}: The specimen biomass data.\cr
-#' \code{Statistics}: Total count, size, and biomass data, by specimen (if \code{stats = TRUE}).\cr
+#' \code{Specimens}: The specimen size data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
+#' \code{Biomass}: The specimen biomass data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
+#' \code{Specimens}: The specimen size data, excluding any Count Extra counts.\cr
+#' \code{Biomass}: The specimen biomass data, excluding any Count Extra counts..\cr
 #' \code{Taxa}: The taxa list of taxa in the dataset.\cr
 #' \code{Missing}: Sample data for any samples that don't have corresponding specimen data (or the species of interest) and were cut from the dataframes listed above.\cr
 #' \code{SampDel}: Sample data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.\cr
-#' \code{SpecDel}: Specimen data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.
+#' \code{SpecDel}: Specimen data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.\cr
+#' \code{Statistics}: Total count, size, and biomass data, by specimen (if \code{stats = TRUE}).
+
 #'
 #' Note on units: All biomass values are in \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m}, \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}. \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal \code{hours}.
+#'
+#' Note on compatibility: If you plan to use \code{\link{sampstats}} or \code{\link{ordmat}} on the \code{sampspec} output, then set \code{stats = TRUE}.
 
 #' @seealso \code{\link{readDB}}, for initial read in of the Sample or Specimen data from the Foodbase database individually, and updating these data. \code{\link{ordmat}} for creating ordination-type matrices of counts, sizes, or biomasses by sample and taxon from a \code{sampspec} output. \code{\link{sampstats}} for computing sample-level statistics on the data.
 
@@ -236,13 +241,13 @@ lout <- list()
 	lout[[3]] <- nbiom3
 	lout[[4]] <- spec7
 	lout[[5]] <- biom3
-	lout[[6]] <- stat4
-	lout[[7]] <- sppl2
-	lout[[8]] <- sampM
-	lout[[9]] <- sampD
-	lout[[10]] <- specD
-	names(lout) <- c('Samples', 'Specimens', 'Biomass', 'RawSpecimens', 'RawBiomass', 'Statistics', 'Taxa', 'Missing', 'SampDel', 'SpecDel')
-	attr(lout, 'gear') <- gear	
+	lout[[6]] <- sppl2
+	lout[[7]] <- sampM
+	lout[[8]] <- sampD
+	lout[[9]] <- specD
+	lout[[10]] <- stat4
+	names(lout) <- c('Samples', 'Specimens', 'Biomass', 'RawSpecimens', 'RawBiomass', 'Taxa', 'Missing', 'SampDel', 'SpecDel', 'Statistics')
+	attr(lout, 'gear') <- gear
 return(lout)
 }
 
