@@ -38,44 +38,44 @@
 # Function call
 ordmat <- function(sampspec, type = 'count'){
 
-# Throw error is sampspec was not run with summary statistics
-if(is.null(dim(sampspec$Statistics))){
-argnames <- sys.call()
-varname <- unlist(lapply(argnames[2], as.character))
-stop(paste(varname, "does not have statistics computed. This function won't work without them.\n  Please re-run sampspec, e.g., ", varname, "<- sampspec(..., stats = TRUE)."))
-}
+  # Throw error is sampspec was not run with summary statistics
+  if(is.null(dim(sampspec$Statistics))){
+    argnames <- sys.call()
+    varname <- unlist(lapply(argnames[2], as.character))
+    stop(paste(varname, "does not have statistics computed. This function won't work without them.\n  Please re-run sampspec, e.g., ", varname, "<- sampspec(..., stats = TRUE)."))
+  }
 
-# Matrices for counts, size means, medians, standard deviations, and biomass
-mat0 <- matrix(data = 0, nrow = dim(sampspec$Samples)[1], ncol = dim(sampspec$Taxa)[1])
-	dimnames(mat0) <- list(sort(sampspec$Samples$BarcodeID), sort(sampspec$Taxa$SpeciesID))
-if(type == 'count'){
-	mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$CountTotal
-	dat1 <- as.data.frame(mat0)
-} else{	
-	mat0[mat0 == 0] <- NA
-	if(type == 'sizemean'){
-		mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$SizeMean
-		dat1 <- as.data.frame(mat0)
-	}
-	if(type == 'sizemed'){
-		mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$SizeMedian
-		dat1 <- as.data.frame(mat0)
-	}
-	if(type == 'sizesd'){
-		mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$SizeSD
-		dat1 <- as.data.frame(mat0)
-	}
-	if(type == 'biomass'){
-		mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$BiomassTotal
-		dat1 <- as.data.frame(mat0)
-	}
-}
-dat2 <- dat1[, colSums(is.na(dat1)) < dim(dat1)[1]]
-if('NOBU' %in% colnames(dat2)){
-	dat2 <- dat2[, -which(colnames(dat2) == 'NOBU')]
-}
-dat2 <- droplevels(dat2)
-	
-# Close function
-return(dat2)
+  # Matrices for counts, size means, medians, standard deviations, and biomass
+  mat0 <- matrix(data = 0, nrow = dim(sampspec$Samples)[1], ncol = dim(sampspec$Taxa)[1])
+  dimnames(mat0) <- list(sort(sampspec$Samples$BarcodeID), sort(sampspec$Taxa$SpeciesID))
+  if(type == 'count'){
+    mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$CountTotal
+    dat1 <- as.data.frame(mat0)
+  } else {
+    mat0[mat0 == 0] <- NA
+    if(type == 'sizemean'){
+      mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$SizeMean
+      dat1 <- as.data.frame(mat0)
+    }
+    if(type == 'sizemed'){
+      mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$SizeMedian
+      dat1 <- as.data.frame(mat0)
+    }
+    if(type == 'sizesd'){
+      mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$SizeSD
+      dat1 <- as.data.frame(mat0)
+    }
+    if(type == 'biomass'){
+      mat0[as.matrix(sampspec$Specimens[1:2])] <- sampspec$Statistics$BiomassTotal
+      dat1 <- as.data.frame(mat0)
+    }
+  }
+  dat2 <- dat1[, colSums(is.na(dat1)) < dim(dat1)[1]]
+  if('NOBU' %in% colnames(dat2)){
+    dat2 <- dat2[, -which(colnames(dat2) == 'NOBU')]
+  }
+  dat2 <- droplevels(dat2)
+
+  # Close function
+  return(dat2)
 }

@@ -34,78 +34,92 @@
 
 #' @export
 
-## Function call
+# Function call
 sampstats <- function(sampspec){
 
-## Determine what sample type we're working with (only implemented currently for Drift, so this doesn't do anything).
-gear <- attributes(sampspec)$gear
+  # Determine what sample type we're working with (only implemented currently for Drift, so this doesn't do anything).
+  gear <- attributes(sampspec)$gear
 
-## Get stats by sample, across a variety of metrics
-stat1 <- data.frame(sampspec$Samples$BarcodeID)
-	colnames(stat1) <- 'BarcodeID'
-frichct <- function(spec){
-	spec1 <- spec[spec$CountTotal > 0,]
-	trich <- tapply(spec1$CountTotal, spec1$BarcodeID, length)
-		crich <- trich[names(trich) == stat1$BarcodeID]
-	tcount <- tapply(spec$CountTotal, spec$BarcodeID, sum)
-		ccount <- tcount[names(tcount) == stat1$BarcodeID]
-	tbiom <- tapply(spec$Biomass, spec$BarcodeID, function(x) sum(x, na.rm = TRUE))
-		cbiom <- tbiom[names(tbiom) == stat1$BarcodeID]
-	return(cbind(crich, ccount, cbiom))
-}
-spec4G <- sampspec$Statistics
-	spec4G[, c('Habitat', 'Class', 'Order')] <- sampspec$Taxa[match(sampspec$Specimens$SpeciesID, sampspec$Taxa$SpeciesID), c('Habitat', 'Class', 'Order')]
-spec4A <- spec4G[spec4G$Habitat == 'Aquatic', ]
-spec4I <- spec4G[spec4G$Class == 'Insecta', ]
-spec4E <- spec4G[spec4G$Order %in% c('Ephemeroptera', 'Plecoptera', 'Trichoptera'), ]
-spec4D <- spec4G[spec4G$Order == 'Diptera' & spec4G$Habitat == 'Aquatic', ]
-stat1[, c('RichTotal', 'CountTotal', 'BiomassTotal')] <- frichct(spec4G)
-stat1[, c('RichAqInvert', 'CountAqInvert', 'BiomassAqInvert')] <- frichct(spec4A)
-stat1[, c('RichAqInsect', 'CountAqInsect', 'BiomassAqInsect')] <- frichct(spec4I)
-stat1[, c('RichEPT', 'CountEPT', 'BiomassEPT')] <- frichct(spec4E)
-stat1[, c('RichAqDipt', 'CountAqDipt', 'BiomassAqDipt')] <- frichct(spec4D)
-spec4N <- sampspec$Specimens[sampspec$Specimens$SpeciesID == 'NOBU', 'BarcodeID']
-	stat1[stat1$BarcodeID %in% spec4N, 'RichTotal'] <- 0
-stat1[is.na(stat1)] <- 0
-fsize <- function(spec){
-	specB <- spec[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
-	specB2 <- aggregate(. ~ spec$BarcodeID, specB, sum)
-	specB3 <- specB2[,-1]
-	lsize1 <- apply(specB3, 1, function(x) rep(c(0.5, 1:20), x))
-	stat1$std <- stat1$md <- stat1$mn <- NA
-	stat1[stat1$BarcodeID %in% specB2[,1], c('mn', 'md', 'std')] <- round(t(sapply(lsize1, function(x) c(mean(x), median(x), sd(x)))), 2)
-	return(stat1[, c('mn', 'md', 'std')])
-}
-taxa4G <- sampspec$Specimens
-	taxa4G[, c('Habitat', 'Class', 'Order')] <- sampspec$Taxa[match(sampspec$Specimens$SpeciesID, sampspec$Taxa$SpeciesID), c('Habitat', 'Class', 'Order')]
-taxa4A <- taxa4G[taxa4G$Habitat == 'Aquatic', ]
-taxa4I <- taxa4G[taxa4G$Class == 'Insecta', ]
-taxa4E <- taxa4G[taxa4G$Order %in% c('Ephemeroptera', 'Plecoptera', 'Trichoptera'), ]
-taxa4D <- taxa4G[taxa4G$Order == 'Diptera' & taxa4G$Habitat == 'Aquatic', ]
-stat1[,c('SizeTotalMean', 'SizeTotalMed', 'SizeTotalSD')] <- fsize(taxa4G)
-if(dim(taxa4A)[1] > 0){
-	stat1[, c('SizeAqInvertMean', 'SizeAqInvertMed', 'SizeAqInvertSD')] <- fsize(taxa4A)
-} else{
-	stat1[, c('SizeAqInvertMean', 'SizeAqInvertMed', 'SizeAqInvertSD')] <- NA
-}
-if(dim(taxa4I)[1] > 0){
-	stat1[, c('SizeAqInsectMean', 'SizeAqInsectMed', 'SizeAqInsectSD')] <- fsize(taxa4I)
-} else{
-	stat1[, c('SizeAqInsectMean', 'SizeAqInsectMed', 'SizeAqInsectSD')] <- NA
-}
-if(dim(taxa4E)[1] > 0){
-	stat1[, c('SizeEPTMean', 'SizeEPTMed', 'SizeEPTSD')] <- fsize(taxa4E)
-} else{
-	stat1[, c('SizeEPTMean', 'SizeEPTMed', 'SizeEPTSD')] <- NA
-}
-if(dim(taxa4D)[1] > 0){
-	stat1[, c('SizeAqDiptMean', 'SizeAqDiptMed', 'SizeAqDiptSD')] <- fsize(taxa4D)
-} else{
-	stat1[, c('SizeAqDiptMean', 'SizeAqDiptMed', 'SizeAqDiptSD')] <- NA
-}
-stat2 <- stat1[,c('BarcodeID', 'CountTotal', 'CountAqInvert', 'CountAqInsect', 'CountEPT', 'CountAqDipt', 'RichTotal', 'RichAqInvert', 'RichAqInsect', 'RichEPT', 'RichAqDipt', 'BiomassTotal', 'BiomassAqInvert', 'BiomassAqInsect', 'BiomassEPT', 'BiomassAqDipt', 'SizeTotalMean', 'SizeAqInvertMean', 'SizeAqInsectMean', 'SizeEPTMean', 'SizeAqDiptMean', 'SizeTotalMed', 'SizeAqInvertMed', 'SizeAqInsectMed', 'SizeEPTMed', 'SizeAqDiptMed', 'SizeTotalSD', 'SizeAqInvertSD', 'SizeAqInsectSD', 'SizeEPTSD', 'SizeAqDiptSD')]
+  # Get stats by sample, across a variety of metrics
+  stat1 <- data.frame(sampspec$Samples$BarcodeID)
+  colnames(stat1) <- 'BarcodeID'
+  frichct <- function(spec){
+    spec1 <- spec[spec$CountTotal > 0,]
+    trich <- tapply(spec1$CountTotal, spec1$BarcodeID, length)
+    crich <- trich[names(trich) == stat1$BarcodeID]
+    tcount <- tapply(spec$CountTotal, spec$BarcodeID, sum)
+    ccount <- tcount[names(tcount) == stat1$BarcodeID]
+    tbiom <- tapply(spec$Biomass, spec$BarcodeID, function(x) sum(x, na.rm = TRUE))
+    cbiom <- tbiom[names(tbiom) == stat1$BarcodeID]
+    return(cbind(crich, ccount, cbiom))
+  }
 
-## Close function
-return(stat2)
+  spec4G <- sampspec$Statistics
+  spec4G[, c('Habitat', 'Class', 'Order')] <- sampspec$Taxa[match(sampspec$Specimens$SpeciesID, sampspec$Taxa$SpeciesID), c('Habitat', 'Class', 'Order')]
+  spec4A <- spec4G[spec4G$Habitat == 'Aquatic', ]
+  spec4I <- spec4G[spec4G$Class == 'Insecta', ]
+  spec4E <- spec4G[spec4G$Order %in% c('Ephemeroptera', 'Plecoptera', 'Trichoptera'), ]
+  spec4D <- spec4G[spec4G$Order == 'Diptera' & spec4G$Habitat == 'Aquatic', ]
+  stat1[, c('RichTotal', 'CountTotal', 'BiomassTotal')] <- frichct(spec4G)
+  stat1[, c('RichAqInvert', 'CountAqInvert', 'BiomassAqInvert')] <- frichct(spec4A)
+  stat1[, c('RichAqInsect', 'CountAqInsect', 'BiomassAqInsect')] <- frichct(spec4I)
+  stat1[, c('RichEPT', 'CountEPT', 'BiomassEPT')] <- frichct(spec4E)
+  stat1[, c('RichAqDipt', 'CountAqDipt', 'BiomassAqDipt')] <- frichct(spec4D)
+  spec4N <- sampspec$Specimens[sampspec$Specimens$SpeciesID == 'NOBU', 'BarcodeID']
+  stat1[stat1$BarcodeID %in% spec4N, 'RichTotal'] <- 0
+  stat1[is.na(stat1)] <- 0
+
+  fsize <- function(spec){
+    specB <- spec[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+    specB2 <- aggregate(. ~ spec$BarcodeID, specB, sum)
+    specB3 <- specB2[,-1]
+    lsize1 <- apply(specB3, 1, function(x) rep(c(0.5, 1:20), x))
+    stat1$std <- stat1$md <- stat1$mn <- NA
+    stat1[stat1$BarcodeID %in% specB2[,1], c('mn', 'md', 'std')] <- round(t(sapply(lsize1, function(x) c(mean(x), median(x), sd(x)))), 2)
+    return(stat1[, c('mn', 'md', 'std')])
+  }
+
+  taxa4G <- sampspec$Specimens
+  taxa4G[, c('Habitat', 'Class', 'Order')] <- sampspec$Taxa[match(sampspec$Specimens$SpeciesID, sampspec$Taxa$SpeciesID), c('Habitat', 'Class', 'Order')]
+  taxa4A <- taxa4G[taxa4G$Habitat == 'Aquatic', ]
+  taxa4I <- taxa4G[taxa4G$Class == 'Insecta', ]
+  taxa4E <- taxa4G[taxa4G$Order %in% c('Ephemeroptera', 'Plecoptera', 'Trichoptera'), ]
+  taxa4D <- taxa4G[taxa4G$Order == 'Diptera' & taxa4G$Habitat == 'Aquatic', ]
+  stat1[,c('SizeTotalMean', 'SizeTotalMed', 'SizeTotalSD')] <- fsize(taxa4G)
+
+  if(dim(taxa4A)[1] > 0){
+    stat1[, c('SizeAqInvertMean', 'SizeAqInvertMed', 'SizeAqInvertSD')] <- fsize(taxa4A)
+  } else {
+    stat1[, c('SizeAqInvertMean', 'SizeAqInvertMed', 'SizeAqInvertSD')] <- NA
+  }
+
+  if(dim(taxa4I)[1] > 0){
+    stat1[, c('SizeAqInsectMean', 'SizeAqInsectMed', 'SizeAqInsectSD')] <- fsize(taxa4I)
+  } else {
+    stat1[, c('SizeAqInsectMean', 'SizeAqInsectMed', 'SizeAqInsectSD')] <- NA
+  }
+
+  if(dim(taxa4E)[1] > 0){
+    stat1[, c('SizeEPTMean', 'SizeEPTMed', 'SizeEPTSD')] <- fsize(taxa4E)
+  } else {
+    stat1[, c('SizeEPTMean', 'SizeEPTMed', 'SizeEPTSD')] <- NA
+  }
+
+  if(dim(taxa4D)[1] > 0){
+    stat1[, c('SizeAqDiptMean', 'SizeAqDiptMed', 'SizeAqDiptSD')] <- fsize(taxa4D)
+  } else {
+    stat1[, c('SizeAqDiptMean', 'SizeAqDiptMed', 'SizeAqDiptSD')] <- NA
+  }
+
+  stat2 <- stat1[,c('BarcodeID', 'CountTotal', 'CountAqInvert', 'CountAqInsect', 'CountEPT',
+                    'CountAqDipt', 'RichTotal', 'RichAqInvert', 'RichAqInsect', 'RichEPT',
+                    'RichAqDipt', 'BiomassTotal', 'BiomassAqInvert', 'BiomassAqInsect',
+                    'BiomassEPT', 'BiomassAqDipt', 'SizeTotalMean', 'SizeAqInvertMean',
+                    'SizeAqInsectMean', 'SizeEPTMean', 'SizeAqDiptMean', 'SizeTotalMed',
+                    'SizeAqInvertMed', 'SizeAqInsectMed', 'SizeEPTMed', 'SizeAqDiptMed',
+                    'SizeTotalSD', 'SizeAqInvertSD', 'SizeAqInsectSD', 'SizeEPTSD', 'SizeAqDiptSD')]
+
+  # Close function
+  return(stat2)
 }
 
