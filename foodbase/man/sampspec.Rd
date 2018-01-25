@@ -4,21 +4,21 @@
 \alias{sampspec}
 \title{Read, format, and combine data from the Foodbase database}
 \usage{
-sampspec(gear = "Drift", samp = "", spec = "", sppl = "",
-  species = "All", stats = FALSE)
+sampspec(samp = "", spec = "", sppl = "", species = "All",
+  stats = FALSE, gear = "")
 }
 \arguments{
-\item{gear}{The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Default is \code{Drift}.}
+\item{samp}{The name of the sample dataframe, if not working from auto-downloaded data. See Details.}
 
-\item{samp}{The name of the sample dataframe, if not working from auto-downloaded data. See details.}
+\item{spec}{The name of the specimen dataframe, if not working from auto-downloaded data. See Details.}
 
-\item{spec}{The name of the specimen dataframe, if not working from auto-downloaded data. See details.}
+\item{sppl}{The name of the species list dataframe, if not working from auto-downloaded data. See Details.}
 
-\item{sppl}{The name of the species list dataframe, if not working from auto-downloaded data. See details.}
-
-\item{species}{Whether to subset the data for only a given taxon. See details. Default is \code{"All"}.}
+\item{species}{Whether to subset the data for only a given taxon. See Details. Default is \code{"All"}.}
 
 \item{stats}{Whether to calculate total count, size, and biomass data for each taxon in each sample. Default is \code{FALSE}.}
+
+\item{gear}{The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Should be specified only in rare cases where you are not working from \code{\link{readDB}} output. See Details.}
 }
 \value{
 Creates a list containing the following dataframes:\cr
@@ -26,14 +26,14 @@ Creates a list containing the following dataframes:\cr
 \code{Specimens}: The specimen size data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
 \code{Biomass}: The specimen biomass data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
 \code{Specimens}: The specimen size data, excluding any Count Extra counts.\cr
-\code{Biomass}: The specimen biomass data, excluding any Count Extra counts..\cr
+\code{Biomass}: The specimen biomass data, excluding any Count Extra counts.\cr
 \code{Taxa}: The taxa list of taxa in the dataset.\cr
 \code{Missing}: Sample data for any samples that don't have corresponding specimen data (or the species of interest) and were cut from the dataframes listed above.\cr
 \code{SampDel}: Sample data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.\cr
 \code{SpecDel}: Specimen data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.\cr
 \code{Statistics}: Total count, size, and biomass data, by specimen (if \code{stats = TRUE}).
 
-Note on units: All biomass values are in \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m}, \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}. \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal \code{hours}.
+Note on units: All count data are presented as raw counts (i.e., just number of bugs, and not density, rate, or concentration). All biomass values are in \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m}, \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}. \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal \code{hours}.
 
 Note on compatibility: If you plan to use \code{\link{sampstats}} or \code{\link{ordmat}} on the \code{sampspec} output, then set \code{stats = TRUE}.
 }
@@ -43,13 +43,15 @@ Pulls exported data from the Foodbase database for use in R, combines Sample, Sp
 \details{
 Currently only \code{Drift} is implemented for \code{gear}.
 
-The data are based on data saved locally on your computer from the Foodbase database when you run the function \code{\link{readDB}}. To update these data, use \code{readDB} (see examples).
+The data are based on data saved locally on your computer from the Foodbase database when you run the function \code{\link{readDB}}. To update these data, use \code{readDB} (see Examples).
 
-The function will look for \code{samp}, \code{spec}, and \code{sppl} within the \code{Data/} directory of \code{foodbase}, unless these are specified individually. Any entry for \code{samp}, \code{spec}, and \code{sppl} overrides data in the \code{Data/} directory of \code{foodbase}. See examples. 
+The function will look for \code{samp}, \code{spec}, and \code{sppl} within the \code{Data/} directory of \code{foodbase}, unless these are specified individually. Any entry for \code{samp}, \code{spec}, and \code{sppl} overrides data in the \code{Data/} directory of \code{foodbase}. See Examples.
 
 In general, it is best to use the companion function \code{\link{readDB}} first to get sample data, subset those sample data, then run \code{sampspec} using those sample data as \code{samp}.
 
-Using \code{species} you can return data for only certain taxa of interest. In addition to choosing species individually (e.g., \code{species = "CHIL"} or \code{species = c("CHIL", "SIML"}, you can also use the shortcut \code{species = "Big4"} to subset only for species codes \code{CHIL}, \code{SIML}, \code{NZMS}, and \code{GAM}.
+Using \code{species} you can return data for only certain taxa of interest. In addition to choosing species individually (e.g., \code{species = "CHIL"} or \code{species = c("CHIL", "SIML")}), you can also use the shortcut \code{species = "Big4"} to subset only for species codes \code{CHIL}, \code{SIML}, \code{NZMS}, and \code{GAM}, or the shortcut \code{species = "Big9"} to subset only for species codes \code{CHIL}, \code{CHIP}, \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{LUMB}, \code{NZMS}, and \code{GAM}.
+
+The argument (\code{gear} can be specified (e.g., \code{gear = 'Drift'}), and in general there is no harm in doing so. However, in most cases \code{gear} will inherit the sample type from the attributes of the code{\link{readDB}} output, so specifying it here is unnecessary. The exception is in rare cases where \code{\link{readDB}} is not run before running \code{sampspec}, as in the case of the \code{whyme} example below.
 }
 \examples{
 # Read in drift sample data from the network, and update sample, specimen, and species list data.
@@ -61,10 +63,7 @@ foo2 <- foo[foo$Reach == "CRLeesFerry",]
 # Get the specimen data for these samples, all wrapped together and formatted nicely.
 foo3 <- sampspec(samp = foo2)
 
-# Example to get these data and also show (separately) data that were cut
-foo4 <- sampspec(samp = foo2, bads = TRUE)
-
-# Or, if you want to analyze all drift data in the database for inexplicable some reason:
+# Or, if you want to analyze all drift data in the database for some inexplicable reason:
 whyme <- sampspec(gear = "Drift")
 
 # Example to get only drift samples with New Zealand mudsnails.
@@ -74,7 +73,7 @@ nzms <- sampspec(species = "NZMS")
 \code{\link{readDB}}, for initial read in of the Sample or Specimen data from the Foodbase database individually, and updating these data. \code{\link{ordmat}} for creating ordination-type matrices of counts, sizes, or biomasses by sample and taxon from a \code{sampspec} output. \code{\link{sampstats}} for computing sample-level statistics on the data.
 }
 \author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
 }
 \concept{
 access, database

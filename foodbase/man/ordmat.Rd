@@ -9,7 +9,7 @@ ordmat(sampspec, type = "count")
 \arguments{
 \item{sampspec}{The name of the \code{sampspec} list output containing sample and specimen information for building the matrix.}
 
-\item{type}{The type of matrix output desired. See details. The default, \code{count}, creates a matrix of count data by taxon and sample.}
+\item{type}{The type of matrix output desired. See Details. The default, \code{count}, creates a matrix of count data by taxon and sample.}
 }
 \value{
 Creates a dataframe where each row is a sample and each column is a taxon.
@@ -22,7 +22,7 @@ This function will likely only work with \code{sampspec} set to an output genera
 
 The \code{type} argument can be specified to return a matrix of counts (\code{count}), biomass (\code{biomass}), or mean, median, or standard deviation in sizes (\code{sizemean}, \code{sizemed}, \code{sizesd}, respectively).
 
-Note on units: All biomass values are in \code{mg}, and sizes are in \code{mm}.
+Note on units: All count data are presented as raw counts (i.e., just number of bugs, and not density, rate, or concentration). All biomass values are in \code{mg}, and sizes are in \code{mm}.
 }
 \examples{
 ## Read in drift sample data from the network (all the defaults).

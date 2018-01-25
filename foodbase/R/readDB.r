@@ -4,16 +4,16 @@
 
 #' @param gear The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Default is \code{Drift}.
 #' @param type Whether to download \code{Sample}, \code{Specimen} or  \code{SppList} (the master species list) data. Default is \code{Sample}.
-#' @param updater Whether to download new versions of the Sample, Specimen, and Species List data, and from what source. See details. Default is \code{FALSE}.
+#' @param updater Whether to download new versions of the Sample, Specimen, and Species List data, and from what source. See Details. Default is \code{FALSE}.
 
 #' @details
 #' Currently only \code{Drift} is implemented for \code{gear}.
 #'
-#' The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information), \code{Specimen} data (i.e., bug counts and sizes, where relevant), or \code{SppList} data (i.e., the master species list). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{sampspec}} function will be faster, and more useful (see examples).
+#' The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information), \code{Specimen} data (i.e., bug counts and sizes, where relevant), or \code{SppList} data (i.e., the master species list). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{sampspec}} function will be faster and more useful (see Examples).
 #'
-#' Regardless of the \code{updater} setting, \code{readDB} checks for a local copy of the \code{Sample}, \code{Specimen}, and \code{SppList} data in the \code{Data} folder of the \code{foodbase} package, and will install these three files there if they are not present (these local copies are what is used for other functions within the \code{foodbase} package). Using \code{updater} will update all three of these files, regardless of what data type is specified by \code{type}.
+#' Regardless of the \code{updater} setting, \code{readDB} checks for a local copy of the \code{Sample}, \code{Specimen}, and \code{SppList} data in the \code{Data} folder of the \code{foodbase} package, and will install these three files there if they are not present (these local copies are used for other functions within the \code{foodbase} package). Using \code{updater} will update all three of these files, regardless of what data type is specified by \code{type}.
 #'
-#' If not set to \code{FALSE}, the \code{updater} can be set to download new data from the \code{Network} (if \code{TRUE} or \code{Network}), or from \code{GitHub}.
+#' If not set to \code{FALSE}, the \code{updater} can be set to download new data from the \code{Network} or from \code{GitHub}. However, it's generally better to specify only \code{updater = TRUE}, in which case R will check to see if you are connected to the DOI network and will download data from the Network if so and from GitHub if not. Although data are pushed to GitHub nightly, the Network data are almost always the most current. 
 
 #' @return Creates a dataframe containing the desired data from the Foodbase database.
 
@@ -50,7 +50,8 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
 
   # Update/add data as necessary
   if(dbdir.exists == FALSE | updater != FALSE){
-    if(updater == 'GitHub'){
+	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
+    if(updater == 'GitHub' | netcheck == 0){
       path <- paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/')
     } else {
       path <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')
@@ -74,5 +75,6 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
       dat$ProcessDate <- as.Date(dat$ProcessDate, format = '%m/%d/%Y')
     }
   }
+  attr(dat, 'gear') <- gear
   return(dat)
 }

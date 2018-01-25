@@ -2,23 +2,25 @@
 
 #' @description Pulls exported data from the Foodbase database for use in R, combines Sample, Specimen, and Species code data, and formats the data to facilitate analysis.
 
-#' @param gear The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Default is \code{Drift}.
-#' @param samp The name of the sample dataframe, if not working from auto-downloaded data. See details.
-#' @param spec The name of the specimen dataframe, if not working from auto-downloaded data. See details.
-#' @param sppl The name of the species list dataframe, if not working from auto-downloaded data. See details.
-#' @param species Whether to subset the data for only a given taxon. See details. Default is \code{"All"}.
+#' @param samp The name of the sample dataframe, if not working from auto-downloaded data. See Details.
+#' @param spec The name of the specimen dataframe, if not working from auto-downloaded data. See Details.
+#' @param sppl The name of the species list dataframe, if not working from auto-downloaded data. See Details.
+#' @param species Whether to subset the data for only a given taxon. See Details. Default is \code{"All"}.
 #' @param stats Whether to calculate total count, size, and biomass data for each taxon in each sample. Default is \code{FALSE}.
+#' @param gear The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Should be specified only in rare cases where you are not working from \code{\link{readDB}} output. See Details.
 
 #' @details
 #' Currently only \code{Drift} is implemented for \code{gear}.
 #'
-#' The data are based on data saved locally on your computer from the Foodbase database when you run the function \code{\link{readDB}}. To update these data, use \code{readDB} (see examples).
+#' The data are based on data saved locally on your computer from the Foodbase database when you run the function \code{\link{readDB}}. To update these data, use \code{readDB} (see Examples).
 #'
-#' The function will look for \code{samp}, \code{spec}, and \code{sppl} within the \code{Data/} directory of \code{foodbase}, unless these are specified individually. Any entry for \code{samp}, \code{spec}, and \code{sppl} overrides data in the \code{Data/} directory of \code{foodbase}. See examples.
+#' The function will look for \code{samp}, \code{spec}, and \code{sppl} within the \code{Data/} directory of \code{foodbase}, unless these are specified individually. Any entry for \code{samp}, \code{spec}, and \code{sppl} overrides data in the \code{Data/} directory of \code{foodbase}. See Examples.
 #'
 #' In general, it is best to use the companion function \code{\link{readDB}} first to get sample data, subset those sample data, then run \code{sampspec} using those sample data as \code{samp}.
 #'
-#' Using \code{species} you can return data for only certain taxa of interest. In addition to choosing species individually (e.g., \code{species = "CHIL"} or \code{species = c("CHIL", "SIML"}, you can also use the shortcut \code{species = "Big4"} to subset only for species codes \code{CHIL}, \code{SIML}, \code{NZMS}, and \code{GAM}.
+#' Using \code{species} you can return data for only certain taxa of interest. In addition to choosing species individually (e.g., \code{species = "CHIL"} or \code{species = c("CHIL", "SIML")}), you can also use the shortcut \code{species = "Big4"} to subset only for species codes \code{CHIL}, \code{SIML}, \code{NZMS}, and \code{GAM}, or the shortcut \code{species = "Big9"} to subset only for species codes \code{CHIL}, \code{CHIP}, \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{LUMB}, \code{NZMS}, and \code{GAM}.
+#'
+#' The argument (\code{gear} can be specified (e.g., \code{gear = 'Drift'}), and in general there is no harm in doing so. However, in most cases \code{gear} will inherit the sample type from the attributes of the code{\link{readDB}} output, so specifying it here is unnecessary. The exception is in rare cases where \code{\link{readDB}} is not run before running \code{sampspec}, as in the case of the \code{whyme} example below.
 
 #' @return Creates a list containing the following dataframes:\cr
 #' \code{Samples}: The sample data.\cr
@@ -33,7 +35,7 @@
 #' \code{Statistics}: Total count, size, and biomass data, by specimen (if \code{stats = TRUE}).
 
 #'
-#' Note on units: All biomass values are in \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m}, \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}. \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal \code{hours}.
+#' Note on units: All count data are presented as raw counts (i.e., just number of bugs, and not density, rate, or concentration). All biomass values are in \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m}, \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}. \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal \code{hours}.
 #'
 #' Note on compatibility: If you plan to use \code{\link{sampstats}} or \code{\link{ordmat}} on the \code{sampspec} output, then set \code{stats = TRUE}.
 
@@ -51,30 +53,40 @@
 #' # Get the specimen data for these samples, all wrapped together and formatted nicely.
 #' foo3 <- sampspec(samp = foo2)
 #'
-#' # Example to get these data and also show (separately) data that were cut
-#' foo4 <- sampspec(samp = foo2, bads = TRUE)
-#'
-#' # Or, if you want to analyze all drift data in the database for inexplicable some reason:
+#' # Or, if you want to analyze all drift data in the database for some inexplicable reason:
 #' whyme <- sampspec(gear = "Drift")
 #'
 #' # Example to get only drift samples with New Zealand mudsnails.
 #' nzms <- sampspec(species = "NZMS")
 
-#' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
+#' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
 
 #' @export
 
 # Function call
-sampspec <- function(gear = "Drift", samp = "", spec = "", sppl = "", species = "All", stats = FALSE){
+sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = FALSE, gear = ""){
 
+  # Set local data storage directory and gear type attribute
   dbdir <- paste0(find.package('foodbase'),'/Data')
-
+  if(gear == ''){
+    if(is.null(attributes(samp)$gear)){
+	  if(is.null(attributes(spec)$gear)){
+	    if(is.null(attributes(sppl)$gear)){
+          return(message("Invalid 'gear' argument."))		
+		} else{
+		  gear <- attributes(sppl)$gear
+		}
+	  } else{
+	    gear <- attributes(spec)$gear
+	  }
+	} else {
+	  gear <- attributes(samp)$gear
+	}
+  }
   # Read in sample data
   if(is.null(dim(samp))){
     if(file.exists(paste0(dbdir, '/', gear, 'Sample.csv')) == FALSE){
-      temp0 <- read.csv(paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/', gear, 'Sample.csv'))
-      dir.create(dbdir, showWarnings = FALSE)
-      write.csv(temp0, paste0(dbdir, '/', gear, 'Sample.csv'), row.names = FALSE)
+      temp0 <- readDB(gear = gear, type = "Sample", updater = TRUE)
     }
     samp0 <- read.csv(paste0(dbdir, '/', gear, 'Sample.csv'))
   } else {
@@ -84,9 +96,7 @@ sampspec <- function(gear = "Drift", samp = "", spec = "", sppl = "", species = 
   # Read in specimen data
   if(is.null(dim(spec))){
     if(file.exists(paste0(dbdir, '/', gear, 'Specimen.csv')) == FALSE){
-      temp0 <- read.csv(paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/', gear, 'Specimen.csv'))
-      dir.create(dbdir, showWarnings = FALSE)
-      write.csv(temp0, paste0(dbdir, '/', gear, 'Specimen.csv'), row.names = FALSE)
+      temp0 <- readDB(gear = gear, type = "Specimen", updater = TRUE)
     }
     spec0 <- read.csv(paste0(dbdir, '/', gear, 'Specimen.csv'))
   } else {
@@ -96,9 +106,7 @@ sampspec <- function(gear = "Drift", samp = "", spec = "", sppl = "", species = 
   # Read in species list data
   if(is.null(dim(sppl))){
     if(file.exists(paste0(dbdir, '/SppList.csv')) == FALSE){
-      temp0 <- read.csv('P:/BIOLOGICAL/Foodbase/Database/Exports/SppList.csv')
-      dir.create(dbdir, showWarnings = FALSE)
-      write.csv(temp0, paste0(dbdir, '/SppList.csv'), row.names = FALSE)
+      temp0 <- readDB(gear = gear, type = "SppList", updater = TRUE)
     }
     sppl0 <- read.csv(paste0(dbdir, '/SppList.csv'))
   } else {
@@ -124,7 +132,7 @@ sampspec <- function(gear = "Drift", samp = "", spec = "", sppl = "", species = 
       if(species == "Big9"){
         spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAM', 'NZMS', 'LUMB'),]
       } else {
-        return(message("Invalid 'species' argument"))
+        return(message("Invalid 'species' argument."))
       }
     }
   }
@@ -173,7 +181,7 @@ sampspec <- function(gear = "Drift", samp = "", spec = "", sppl = "", species = 
   spec4 <- spec3[, c('BarcodeID', 'SpeciesID', 'Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20', 'CountTotal')]
   combs <- data.frame(BarcodeID = rep(sort(unique(samp2$BarcodeID)), rep(length(unique(spec4$SpeciesID)), length(unique(samp2$BarcodeID)))), SpeciesID = rep(sort(unique(spec4$SpeciesID)), length(unique(samp2$BarcodeID))))
   combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in% paste(spec4$BarcodeID, spec4$SpeciesID) == FALSE,]
-  spec5 <- rbind.fill(spec4, combs1)
+  spec5 <- bind_rows(spec4, combs1)
   spec5[is.na(spec5)] <- 0
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
   spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) == 'CountTotal')]
@@ -231,7 +239,7 @@ sampspec <- function(gear = "Drift", samp = "", spec = "", sppl = "", species = 
     stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x) c(mean(x), median(x), sd(x)))), 2)
     stat1$BiomassTotal <- nbiomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), paste(regs1$BarcodeID, regs1$SpeciesID))]
     stat1$Notes <- spec3$Notes
-    stat2 <- rbind.fill(stat1, combs1)
+    stat2 <- bind_rows(stat1, combs1)
     stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
     stat2$Notes[is.na(stat2$Notes)] <- ''
     stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal) & stat2$SpeciesID %in% sppregs, 0, stat2$BiomassTotal)
@@ -246,7 +254,7 @@ sampspec <- function(gear = "Drift", samp = "", spec = "", sppl = "", species = 
                'Specimens' = snew5,
                'Biomass' = nbiom3,
                'RawSpecimens' = spec7,
-               'RawBiomass' = biom3m,
+               'RawBiomass' = biom3,
                'Taxa' = sppl2,
                'Missing' = sampM,
                'SampDel' = sampD,
