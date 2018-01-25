@@ -43,7 +43,7 @@ Pulls exported data from the Foodbase database for use in R, combines Sample, Sp
 \details{
 Currently only \code{Drift} is implemented for \code{gear}.
 
-The data are based on data saved locally on your computer from the Foodbase database when you run the function \code{\link{readDB}}. To update these data, use \code{readDB} (see Examples).
+The data are based on data saved locally on your computer from the Foodbase database when you run the function \code{\link{readDB}}. To update these data, use \code{\link{readDB}} (see Examples).
 
 The function will look for \code{samp}, \code{spec}, and \code{sppl} within the \code{Data/} directory of \code{foodbase}, unless these are specified individually. Any entry for \code{samp}, \code{spec}, and \code{sppl} overrides data in the \code{Data/} directory of \code{foodbase}. See Examples.
 
@@ -51,7 +51,7 @@ In general, it is best to use the companion function \code{\link{readDB}} first 
 
 Using \code{species} you can return data for only certain taxa of interest. In addition to choosing species individually (e.g., \code{species = "CHIL"} or \code{species = c("CHIL", "SIML")}), you can also use the shortcut \code{species = "Big4"} to subset only for species codes \code{CHIL}, \code{SIML}, \code{NZMS}, and \code{GAM}, or the shortcut \code{species = "Big9"} to subset only for species codes \code{CHIL}, \code{CHIP}, \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{LUMB}, \code{NZMS}, and \code{GAM}.
 
-The argument (\code{gear} can be specified (e.g., \code{gear = 'Drift'}), and in general there is no harm in doing so. However, in most cases \code{gear} will inherit the sample type from the attributes of the code{\link{readDB}} output, so specifying it here is unnecessary. The exception is in rare cases where \code{\link{readDB}} is not run before running \code{sampspec}, as in the case of the \code{whyme} example below.
+The argument \code{gear} can be specified (e.g., \code{gear = 'Drift'}), and in general there is no harm in doing so. However, in most cases \code{gear} will inherit the sample type from the attributes of the \code{\link{readDB}} output, so specifying it here is unnecessary. The exception is in rare cases where \code{\link{readDB}} is not run before running \code{sampspec}, as in the case of the \code{whyme} example below.
 }
 \examples{
 # Read in drift sample data from the network, and update sample, specimen, and species list data.
