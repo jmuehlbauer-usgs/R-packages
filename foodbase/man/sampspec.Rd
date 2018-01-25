@@ -67,7 +67,7 @@ foo3 <- sampspec(samp = foo2)
 whyme <- sampspec(gear = "Drift")
 
 # Example to get only drift samples with New Zealand mudsnails.
-nzms <- sampspec(species = "NZMS")
+nzms <- sampspec(species = "NZMS", gear = "Drift")
 }
 \seealso{
 \code{\link{readDB}}, for initial read in of the Sample or Specimen data from the Foodbase database individually, and updating these data. \code{\link{ordmat}} for creating ordination-type matrices of counts, sizes, or biomasses by sample and taxon from a \code{sampspec} output. \code{\link{sampstats}} for computing sample-level statistics on the data.

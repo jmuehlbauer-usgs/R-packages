@@ -57,7 +57,7 @@
 #' whyme <- sampspec(gear = "Drift")
 #'
 #' # Example to get only drift samples with New Zealand mudsnails.
-#' nzms <- sampspec(species = "NZMS")
+#' nzms <- sampspec(species = "NZMS", gear = "Drift")
 
 #' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
 
@@ -132,7 +132,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
       if(species == "Big9"){
         spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAM', 'NZMS', 'LUMB'),]
       } else {
-        return(message("Invalid 'species' argument."))
+        spec0 <- spec0[spec0$SpeciesID %in% species,]
+		  if(dim(spec0)[1] == 0){
+		    return(message("Invalid 'species' argument."))
+		  }
       }
     }
   }
