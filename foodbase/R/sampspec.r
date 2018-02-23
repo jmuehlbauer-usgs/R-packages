@@ -26,8 +26,8 @@
 #' \code{Samples}: The sample data.\cr
 #' \code{Specimens}: The specimen size data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
 #' \code{Biomass}: The specimen biomass data. Accounts for Count Extra counts by assigning them proportionally to size bins.\cr
-#' \code{Specimens}: The specimen size data, excluding any Count Extra counts.\cr
-#' \code{Biomass}: The specimen biomass data, excluding any Count Extra counts.\cr
+#' \code{RawSpecimens}: The specimen size data, excluding any Count Extra counts.\cr
+#' \code{RawBiomass}: The specimen biomass data, excluding any Count Extra counts.\cr
 #' \code{Taxa}: The taxa list of taxa in the dataset.\cr
 #' \code{Missing}: Sample data for any samples that don't have corresponding specimen data (or the species of interest) and were cut from the dataframes listed above.\cr
 #' \code{SampDel}: Sample data for any samples that were in the read sample data but were flagged for deletion and therefore cut from the dataframes listed above.\cr
@@ -72,7 +72,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     if(is.null(attributes(samp)$gear)){
 	  if(is.null(attributes(spec)$gear)){
 	    if(is.null(attributes(sppl)$gear)){
-          return(message("Invalid 'gear' argument."))		
+          return(message("Invalid 'gear' argument."))
 		} else{
 		  gear <- attributes(sppl)$gear
 		}
