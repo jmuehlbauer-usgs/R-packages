@@ -123,21 +123,23 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   samp0$ProcessDate <- as.Date(samp0$ProcessDate, format = '%m/%d/%Y')
 
   # Subset to only species of interest
-  if(species == "All" | species == ""){
-    spec0 <- spec0
-  } else {
-    if(species == "Big4"){
-      spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'SIML', 'GAM', 'NZMS'),]
+  if(length(species) == 1) {
+    if(species == "All" | species == ""){
+      spec0 <- spec0
     } else {
-      if(species == "Big9"){
-        spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAM', 'NZMS', 'LUMB'),]
+      if(species == "Big4"){
+        spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'SIML', 'GAM', 'NZMS'),]
       } else {
-        spec0 <- spec0[spec0$SpeciesID %in% species,]
-		  if(dim(spec0)[1] == 0){
-		    return(message("Invalid 'species' argument."))
-		  }
-      }
-    }
+        if(species == "Big9"){
+          spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAM', 'NZMS', 'LUMB'),]
+        } 
+	  }
+	}
+  } else {
+      spec0 <- spec0[spec0$SpeciesID %in% species,]
+	  if(dim(spec0)[1] == 0){
+	    return(message("Invalid 'species' argument."))
+	  }
   }
 
   # Add same size classes from coarse and fine sieves together
