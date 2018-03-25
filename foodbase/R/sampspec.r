@@ -81,8 +81,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 	  }
 	} else {
 	  gear <- attributes(samp)$gear
+
 	}
   }
+
   # Read in sample data
   if(is.null(dim(samp))){
     if(file.exists(paste0(dbdir, '/', gear, 'Sample.csv')) == FALSE){
@@ -105,12 +107,17 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   # Read in species list data
   if(is.null(dim(sppl))){
-    if(file.exists(paste0(dbdir, '/SppList.csv')) == FALSE){
+    if(file.exists(paste0(dbdir, '/SpeciesList.csv')) == FALSE){
       temp0 <- readDB(gear = gear, type = "SppList", updater = TRUE)
     }
-    sppl0 <- read.csv(paste0(dbdir, '/SppList.csv'))
+    sppl0 <- read.csv(paste0(dbdir, '/SpeciesList.csv'))
   } else {
     sppl0 <- sppl
+  }
+
+  if(attributes(samp)$gear == "FishGut"){                             # take this out with new fish gut tables
+    samp0$BarcodeID = samp0$FishGutSampleID
+    spec0$BarcodeID = spec0$FishgutSample
   }
 
   # Sort by barcode and SpeciesID
@@ -118,7 +125,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   spec0 <- spec0[order(spec0$BarcodeID, spec0$SpeciesID),]
   sppl0 <- sppl0[order(sppl0$SpeciesID),]
 
-  # Sample Date, Process Date to date format
+  # Sample Date, Process Date to date format                              # can this be handled by readDB (or is it already)?
   samp0$Date <- as.Date(samp0$Date, format = '%m/%d/%Y')
   samp0$ProcessDate <- as.Date(samp0$ProcessDate, format = '%m/%d/%Y')
 
@@ -140,13 +147,26 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     }
   }
 
-  # Add same size classes from coarse and fine sieves together
-  spec1 <- spec0[, c('BarcodeID', 'SpeciesID', 'Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C20', 'CountTotal', 'Notes')]
-  colnames(spec1) <- c('BarcodeID', 'SpeciesID', 'Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20', 'CountTotal', 'Notes')
-  spec1[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15')] <-
-    spec0[, c('Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15')] +
-    spec0[, c('Fpt5', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14', 'F15')]
+  # Add same size classes from coarse and fine sieves together for drift
+  spec.cols = c('BarcodeID', 'SpeciesID', 'Bpt5', as.character(paste0("B", c(1:20))), 'CountTotal', 'Notes')
 
+  if(attributes(samp)$gear == "Drift"){
+    spec1 <- spec0[, c('BarcodeID', 'SpeciesID', 'Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C20', 'CountTotal', 'Notes')]
+    # colnames(spec1) <- c('BarcodeID', 'SpeciesID', 'Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20', 'CountTotal', 'Notes')
+    colnames(spec1) <- spec.cols
+    spec1[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15')] <-
+      spec0[, c('Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15')] +
+      spec0[, c('Fpt5', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14', 'F15')]
+  }
+
+  # Subset columns to match case for drift above
+  if(attributes(samp)$gear == "FishGut"){
+    spec1 <- spec0[,which(colnames(spec0) %in% spec.cols)]
+
+    spec1$CountTotal = spec0$TotalExtra + spec0$AGG
+  }
+
+  #------------------------------------
   # Cut specimens that aren't in samples
   spec2 <- spec1[spec1$BarcodeID %in% samp0$BarcodeID, ]
 
@@ -174,16 +194,40 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     rownames(specD) <- 1:dim(specD)[1]
   }
 
+  #------------------------------------
   # Subset species list, reduce to only columns of interest
   sppl1 <- sppl0[sppl0$SpeciesID %in% spec3$SpeciesID,]
-  sppl2 <- sppl1[, c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order', 'Family', 'Genus', 'Species', 'Habitat', 'Stage', 'FFG', 'Description', 'CommonName', 'RegressionA', 'RegressionB', 'Notes')]
+  sppl2 <- sppl1[, c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order',
+                     'Family', 'Genus', 'Species', 'Habitat', 'Stage', 'FFG',
+                     'Description', 'CommonName', 'RegressionA',
+                     'RegressionB', 'Notes')]
   sppl2 <- droplevels(sppl2)
   rownames(sppl2) <- 1:dim(sppl2)[1]
 
+
+  #------------------------------------
   # Add implicit 0 taxa counts into data, remove NOBUs
-  spec4 <- spec3[, c('BarcodeID', 'SpeciesID', 'Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20', 'CountTotal')]
-  combs <- data.frame(BarcodeID = rep(sort(unique(samp2$BarcodeID)), rep(length(unique(spec4$SpeciesID)), length(unique(samp2$BarcodeID)))), SpeciesID = rep(sort(unique(spec4$SpeciesID)), length(unique(samp2$BarcodeID))))
-  combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in% paste(spec4$BarcodeID, spec4$SpeciesID) == FALSE,]
+  # spec4 <- spec3[, c('BarcodeID', 'SpeciesID', 'Bpt5', 'B1', 'B2', 'B3',
+  #                    'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11',
+  #                    'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18',
+  #                    'B19', 'B20', 'CountTotal')]
+
+  # combs <- data.frame(BarcodeID = rep(sort(unique(samp2$BarcodeID)),
+  #                                     rep(length(unique(spec4$SpeciesID)),
+  #                                         length(unique(samp2$BarcodeID)))),
+  #                     SpeciesID = rep(sort(unique(spec4$SpeciesID)),
+  #                                     length(unique(samp2$BarcodeID))))
+
+  spec4 <- spec3[,which(names(spec3) %in% spec.cols[-length(spec.cols)])]
+
+  # Does this need to be ordered.........? (as combs is?)
+  combs <- expand.grid(BarcodeID = unique(samp2$BarcodeID),
+                      SpeciesID = unique(spec4$SpeciesID))
+
+  # only the combos that aren't already in the spec
+  combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in%
+                    paste(spec4$BarcodeID, spec4$SpeciesID) == FALSE,]
+
   spec5 <- bind_rows(spec4, combs1)
   spec5[is.na(spec5)] <- 0
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
@@ -191,11 +235,26 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   rownames(spec7) <- 1:dim(spec7)[1]
   spec7 <- droplevels(spec7)
 
+  #------------------------------------
   # Build new spec dataframe with Count Extra factored into size classes
   snew1 <- spec6
-  snew1$Extra <- with(snew1, ifelse(CountTotal == Bpt5 + B1 + B2 + B3 + B4 + B5 + B6 + B7 + B8 + B9 + B10 + B11 + B12 + B13 + B14 + B15 + B16 + B17 + B18 + B19 + B20, 0,
-                                    CountTotal - (Bpt5 + B1 + B2 + B3 + B4 + B5 + B6 + B7 + B8 + B9 + B10 + B11 + B12 + B13 + B14 + B15 + B16 + B17 + B18 + B19 + B20)))
+
+
+  snew1$Extra <- with(snew1, ifelse(CountTotal == Bpt5 + B1 + B2 + B3 + B4 +
+                                      B5 + B6 + B7 + B8 + B9 + B10 + B11 + B12 +
+                                      B13 + B14 + B15 + B16 + B17 + B18 + B19 + B20, 0,
+                                    CountTotal - (Bpt5 + B1 + B2 + B3 + B4 + B5 + B6 +
+                                                    B7 + B8 + B9 + B10 + B11 + B12 + B13
+                                                  + B14 + B15 + B16 + B17 + B18 + B19 + B20)))
+
+
+
   snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
+
+  snew1$Extra <- snew1$
+  snew1$MeasuredTotal <- rowSums(snew1[,c('Bpt5', as.character(paste0("B", c(1:20))))])
+
+
   snew2 <- snew1[, -which(names(snew1) %in% c('BarcodeID', 'SpeciesID', 'CountTotal', 'Extra', 'MeasuredTotal'))]
   snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
   snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
@@ -205,6 +264,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   rownames(snew5) <- 1:dim(snew5)[1]
   snew5 <- droplevels(snew5)
 
+  #------------------------------------
   # Get biomasses for each size class, taxon, and site
   sppregs <- sppl2[!is.na(sppl2$RegressionA) & !is.na(sppl2$RegressionB), 'SpeciesID']
   regs <- spec7[spec7$SpeciesID %in% sppregs,]
@@ -220,6 +280,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   rownames(biom3) <- 1:dim(biom3)[1]
   biom3 <- droplevels(biom3)
 
+  #------------------------------------
   # Get biomasses again, this time accounting for Count Extras
   regs1 <- snew5[snew5$SpeciesID %in% sppregs,]
   specB1 <- regs1[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
@@ -232,6 +293,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   rownames(nbiom3) <- 1:dim(nbiom3)[1]
   nbiom3 <- droplevels(nbiom3)
 
+  #------------------------------------
   # Combine all summary stats into a dataframe
   if(stats == FALSE){
     stat4 <- 'Statistics not computed (stats = FALSE).'
@@ -252,7 +314,8 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     stat4 <- droplevels(stat4)
   }
 
-  # Create and spit out list, close function
+  #------------------------------------
+  # Create and spit out list
   lout <- list('Samples' = samp2,
                'Specimens' = snew5,
                'Biomass' = nbiom3,
