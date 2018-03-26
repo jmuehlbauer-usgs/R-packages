@@ -129,7 +129,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   samp0$Date <- as.Date(samp0$Date, format = '%m/%d/%Y')
   samp0$ProcessDate <- as.Date(samp0$ProcessDate, format = '%m/%d/%Y')
 
-  # Subset to only species of interest
+  # Subset to only species of interest                                # Need to add case for just one taxa (i.e., "GAMM")
   if(species == "All" | species == ""){
     spec0 <- spec0
   } else {
@@ -148,7 +148,12 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   }
 
   # Add same size classes from coarse and fine sieves together for drift
-  spec.cols = c('BarcodeID', 'SpeciesID', 'Bpt5', as.character(paste0("B", c(1:20))), 'CountTotal', 'Notes')
+
+  money.cols = c('Bpt5', as.character(paste0("B", c(1:20))))
+  # spec.cols = c('BarcodeID', 'SpeciesID', 'Bpt5', as.character(paste0("B", c(1:20))), 'CountTotal', 'Notes')
+  spec.cols = c('BarcodeID', 'SpeciesID', 'Bpt5', money.cols, 'CountTotal', 'Notes')
+
+
 
   if(attributes(samp)$gear == "Drift"){
     spec1 <- spec0[, c('BarcodeID', 'SpeciesID', 'Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C20', 'CountTotal', 'Notes')]
@@ -157,13 +162,22 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     spec1[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15')] <-
       spec0[, c('Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15')] +
       spec0[, c('Fpt5', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14', 'F15')]
-  }
+
+    # spec1$Extra =          # add this in for drift
+    }
 
   # Subset columns to match case for drift above
   if(attributes(samp)$gear == "FishGut"){
+
+    # git rid of NA in the count cols
+    cols <- which(colnames(spec0) %in% c(money.cols, "TotalExtra", "AGG"))
+    spec0[,cols] = apply(spec0[,cols], 2, function(x) ifelse(is.na(x), 0, x))
+
     spec1 <- spec0[,which(colnames(spec0) %in% spec.cols)]
 
-    spec1$CountTotal = spec0$TotalExtra + spec0$AGG
+    spec1$Extra = spec0$TotalExtra + spec0$AGG
+    spec1$CountTotal = rowSums(spec0[,c('Bpt5', as.character(paste0("B", c(1:20))))], na.rm = T) +
+      spec1$Extra
   }
 
   #------------------------------------
@@ -218,7 +232,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   #                     SpeciesID = rep(sort(unique(spec4$SpeciesID)),
   #                                     length(unique(samp2$BarcodeID))))
 
-  spec4 <- spec3[,which(names(spec3) %in% spec.cols[-length(spec.cols)])]
+  spec4 <- spec3                      # update names in this block...
 
   # Does this need to be ordered.........? (as combs is?)
   combs <- expand.grid(BarcodeID = unique(samp2$BarcodeID),
@@ -229,9 +243,9 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
                     paste(spec4$BarcodeID, spec4$SpeciesID) == FALSE,]
 
   spec5 <- bind_rows(spec4, combs1)
-  spec5[is.na(spec5)] <- 0
+  spec5[is.na(spec5)] <- 0          # ignore warning, this is b/c notes are in there....fix, do we need notes?
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
-  spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) == 'CountTotal')]
+  spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'Extra', 'CountTotal')) ]
   rownames(spec7) <- 1:dim(spec7)[1]
   spec7 <- droplevels(spec7)
 
@@ -239,23 +253,21 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # Build new spec dataframe with Count Extra factored into size classes
   snew1 <- spec6
 
-
-  snew1$Extra <- with(snew1, ifelse(CountTotal == Bpt5 + B1 + B2 + B3 + B4 +
-                                      B5 + B6 + B7 + B8 + B9 + B10 + B11 + B12 +
-                                      B13 + B14 + B15 + B16 + B17 + B18 + B19 + B20, 0,
-                                    CountTotal - (Bpt5 + B1 + B2 + B3 + B4 + B5 + B6 +
-                                                    B7 + B8 + B9 + B10 + B11 + B12 + B13
-                                                  + B14 + B15 + B16 + B17 + B18 + B19 + B20)))
-
-
+    # snew1$Extra <- with(snew1, ifelse(CountTotal == Bpt5 + B1 + B2 + B3 + B4 +
+  #                                     B5 + B6 + B7 + B8 + B9 + B10 + B11 + B12 +
+  #                                     B13 + B14 + B15 + B16 + B17 + B18 + B19 + B20, 0,
+  #                                   CountTotal - (Bpt5 + B1 + B2 + B3 + B4 + B5 + B6 +
+  #                                                   B7 + B8 + B9 + B10 + B11 + B12 + B13
+  #                                                 + B14 + B15 + B16 + B17 + B18 + B19 + B20)))
 
   snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
 
-  snew1$Extra <- snew1$
-  snew1$MeasuredTotal <- rowSums(snew1[,c('Bpt5', as.character(paste0("B", c(1:20))))])
+  # snew1$Extra <- snew1$
+  # snew1$MeasuredTotal <- rowSums(snew1[,c('Bpt5', as.character(paste0("B", c(1:20))))])
 
 
-  snew2 <- snew1[, -which(names(snew1) %in% c('BarcodeID', 'SpeciesID', 'CountTotal', 'Extra', 'MeasuredTotal'))]
+  # snew2 <- snew1[, -which(names(snew1) %in% c('BarcodeID', 'SpeciesID', 'CountTotal', 'Extra', 'MeasuredTotal'))]
+  snew2 <- snew1[, money.cols]
   snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
   snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
   colnames(snew4) <- colnames(snew1[1:dim(snew4)[2]])
@@ -268,14 +280,17 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # Get biomasses for each size class, taxon, and site
   sppregs <- sppl2[!is.na(sppl2$RegressionA) & !is.na(sppl2$RegressionB), 'SpeciesID']
   regs <- spec7[spec7$SpeciesID %in% sppregs,]
-  specB <- regs[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
-  reps <- c(0.5, 1:20)
+  # specB <- regs[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+  specB <- regs[,money.cols]
+  # reps <- c(0.5, 1:20)
+  reps <- seq(0.5, 20.5, 1)  # think this should be the midpoint of each bin (i.e., .5, 1.5, 2.5, ect....)
   lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
   ABs <- sppl2[match(regs$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
   biom1 <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
   biomsum <- rowSums(biom1)
   biom2 <- regs
-  biom2[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')] <- biom1
+  # biom2[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')] <- biom1
+  biom2[, money.cols] <- biom1
   biom3 <- biom2[!is.na(biomsum),]
   rownames(biom3) <- 1:dim(biom3)[1]
   biom3 <- droplevels(biom3)
@@ -283,12 +298,14 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   #------------------------------------
   # Get biomasses again, this time accounting for Count Extras
   regs1 <- snew5[snew5$SpeciesID %in% sppregs,]
-  specB1 <- regs1[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+  # specB1 <- regs1[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+  specB1 <- regs1[, money.cols]
   ABs <- sppl2[match(regs1$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
   nbiom1 <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
   nbiomsum <- rowSums(nbiom1)
   nbiom2 <- regs1
-  nbiom2[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')] <- nbiom1
+  # nbiom2[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')] <- nbiom1
+  nbiom2[, money.cols] <- nbiom1
   nbiom3 <- nbiom2[!is.na(nbiomsum),]
   rownames(nbiom3) <- 1:dim(nbiom3)[1]
   nbiom3 <- droplevels(nbiom3)
