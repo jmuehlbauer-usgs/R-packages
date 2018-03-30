@@ -2,16 +2,16 @@
 
 #' @description Pulls exported data from the Foodbase database for use in R.
 
-#' @param gear The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Default is \code{Drift}.
-#' @param type Whether to download \code{Sample}, \code{Specimen} or  \code{SppList} (the master species list) data. Default is \code{Sample}.
+#' @param gear The sampling gear type of interest (\code{Drift}, \code{LightTrap}, \code{FishGut}, etc). Default is \code{Drift}.
+#' @param type Whether to download \code{Sample}, \code{Specimen} or  \code{SpeciesList} (the master species list) data. Default is \code{Sample}.
 #' @param updater Whether to download new versions of the Sample, Specimen, and Species List data, and from what source. See Details. Default is \code{FALSE}.
 
 #' @details
-#' Currently only \code{Drift} is implemented for \code{gear}.
+#' Currently only \code{Drift} and \code{FishGut} are implemented for \code{gear}.
 #'
-#' The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information), \code{Specimen} data (i.e., bug counts and sizes, where relevant), or \code{SppList} data (i.e., the master species list). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{sampspec}} function will be faster and more useful (see Examples).
+#' The \code{type} argument specifies whether to return \code{Sample} data (i.e., sample collection information), \code{Specimen} data (i.e., bug counts and sizes, where relevant), or \code{SpeciesList} data (i.e., the master species list). If you are interested in working with both \code{Sample} and \code{Specimen} data, then using this function to get the \code{Sample} data, filtering to only the data of interest, then running the \code{\link{sampspec}} function will be faster and more useful (see Examples).
 #'
-#' Regardless of the \code{updater} setting, \code{readDB} checks for a local copy of the \code{Sample}, \code{Specimen}, and \code{SppList} data in the \code{Data} folder of the \code{foodbase} package, and will install these three files there if they are not present (these local copies are used for other functions within the \code{foodbase} package). Using \code{updater} will update all three of these files, regardless of what data type is specified by \code{type}.
+#' Regardless of the \code{updater} setting, \code{readDB} checks for a local copy of the \code{Sample}, \code{Specimen}, and \code{SpeciesList} data in the \code{Data} folder of the \code{foodbase} package, and will install these three files there if they are not present (these local copies are used for other functions within the \code{foodbase} package). Using \code{updater} will update all three of these files, regardless of what data type is specified by \code{type}.
 #'
 #' If not set to \code{FALSE}, the \code{updater} can be set to download new data from the \code{Network} or from \code{GitHub}. However, it's generally better to specify only \code{updater = TRUE}, in which case R will check to see if you are connected to the DOI network and will download data from the Network if so and from GitHub if not. Although data are pushed to GitHub nightly, the Network data are almost always the most current.
 
@@ -70,13 +70,13 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
   }
 
   # Read in the data
-  if(type == 'SppList'){
+  if(type == 'SpeciesList'){
     dat <- read.csv(paste0(dbdir, '/SpeciesList.csv'))
   } else {
     dat <- read.csv(paste0(dbdir, '/', gear, type, '.csv'))
     # dat <- read.csv(paste0(dbdir, '/', gear, type, '_new.csv'))                  # change when done with Gut update
     if(type == 'Sample'){
-      dat$Date <- as.Date(dat$Date, format = '%m/%d/%Y')
+      dat$Date <- as.Date(dat$Date, format = '%m/%d/%Y')                           # also format time col...
       dat$ProcessDate <- as.Date(dat$ProcessDate, format = '%m/%d/%Y')
     }
   }
