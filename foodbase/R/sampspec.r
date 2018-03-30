@@ -1,16 +1,16 @@
 #' @title Read, format, and combine data from the Foodbase database
 
-#' @description Pulls exported data from the Foodbase database for use in R, combines Sample, Specimen, and Species code data, and formats the data to facilitate analysis.
+#' @description Pulls exported data from the Foodbase database for use in R, combines Sample, Specimen, and Species List data, and formats the data to facilitate analysis.
 
 #' @param samp The name of the sample dataframe, if not working from auto-downloaded data. See Details.
 #' @param spec The name of the specimen dataframe, if not working from auto-downloaded data. See Details.
 #' @param sppl The name of the species list dataframe, if not working from auto-downloaded data. See Details.
 #' @param species Whether to subset the data for only a given taxon. See Details. Default is \code{"All"}.
-#' @param stats Whether to calculate total count, size, and biomass data for each taxon in each sample. Default is \code{FALSE}.
-#' @param gear The sampling gear type of interest (\code{Drift}, \code{LightTrap}, etc). Should be specified only in rare cases where you are not working from \code{\link{readDB}} output. See Details.
+#' @param stats Whether to calculate total count, size, and biomass data for each taxon in each sample. Default is \code{FALSE}. Currently only works for \code{Drift}.
+#' @param gear The sampling gear type of interest (\code{Drift}, \code{LightTrap}, \code{FishGut}, etc). Should be specified only in rare cases where you are not working from \code{\link{readDB}} output. See Details.
 
 #' @details
-#' Currently only \code{Drift} is implemented for \code{gear}.
+#' Currently only \code{Drift} and \code{FishGut} are implemented for \code{gear}.
 #'
 #' The data are based on data saved locally on your computer from the Foodbase database when you run the function \code{\link{readDB}}. To update these data, use \code{\link{readDB}} (see Examples).
 #'
@@ -85,6 +85,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 	}
   }
 
+  #------------------------------------
   # Read in sample data
   if(is.null(dim(samp))){
     if(file.exists(paste0(dbdir, '/', gear, 'Sample.csv')) == FALSE){
@@ -108,7 +109,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # Read in species list data
   if(is.null(dim(sppl))){
     if(file.exists(paste0(dbdir, '/SpeciesList.csv')) == FALSE){
-      temp0 <- readDB(gear = gear, type = "SppList", updater = TRUE)
+      temp0 <- readDB(gear = gear, type = "SpeciesList", updater = TRUE)
     }
     sppl0 <- read.csv(paste0(dbdir, '/SpeciesList.csv'))
   } else {
@@ -129,6 +130,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   samp0$Date <- as.Date(samp0$Date, format = '%m/%d/%Y')
   samp0$ProcessDate <- as.Date(samp0$ProcessDate, format = '%m/%d/%Y')
 
+  #------------------------------------
   # Subset to only species of interest                                # Need to add case for just one taxa (i.e., "GAMM")
   if(species == "All" | species == ""){
     spec0 <- spec0
@@ -147,13 +149,11 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     }
   }
 
+  #------------------------------------
   # Add same size classes from coarse and fine sieves together for drift
 
   money.cols = c('Bpt5', as.character(paste0("B", c(1:20))))
-  # spec.cols = c('BarcodeID', 'SpeciesID', 'Bpt5', as.character(paste0("B", c(1:20))), 'CountTotal', 'Notes')
-  spec.cols = c('BarcodeID', 'SpeciesID', 'Bpt5', money.cols, 'CountTotal', 'Notes')
-
-
+  spec.cols = c('BarcodeID', 'SpeciesID', money.cols, 'CountTotal', 'Notes')
 
   if(attributes(samp)$gear == "Drift"){
     spec1 <- spec0[, c('BarcodeID', 'SpeciesID', 'Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15', 'C16', 'C17', 'C18', 'C19', 'C20', 'CountTotal', 'Notes')]
@@ -163,19 +163,20 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
       spec0[, c('Cpt5', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12', 'C13', 'C14', 'C15')] +
       spec0[, c('Fpt5', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14', 'F15')]
 
-    # spec1$Extra =          # add this in for drift
+    spec1$Extra = spec0$CExtra + spec0$FExtra         # add this in for drift
     }
 
   # Subset columns to match case for drift above
   if(attributes(samp)$gear == "FishGut"){
 
-    # git rid of NA in the count cols
+    # git rid of NA in the count cols                                                          # could this be handled with the .csv inport?
     cols <- which(colnames(spec0) %in% c(money.cols, "TotalExtra", "AGG"))
     spec0[,cols] = apply(spec0[,cols], 2, function(x) ifelse(is.na(x), 0, x))
 
-    spec1 <- spec0[,which(colnames(spec0) %in% spec.cols)]
+    # exclude 'Notes' here, as it's only returned for the drift, when running stats
+    spec1 <- spec0[,which(colnames(spec0) %in% spec.cols[-length(spec.cols)])]
 
-    spec1$Extra = spec0$TotalExtra + spec0$AGG
+    spec1$Extra = spec0$TotalExtra #+ spec0$AGG
     spec1$CountTotal = rowSums(spec0[,c('Bpt5', as.character(paste0("B", c(1:20))))], na.rm = T) +
       spec1$Extra
   }
@@ -200,6 +201,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   if(dim(sampD)[1] > 0){
     rownames(sampD) <- 1:dim(sampD)[1]
   }
+
   spec3 <- spec2[spec2$BarcodeID %in% samp2$BarcodeID, ]
   spec3 <- droplevels(spec3)
   specD <- spec2[spec2$BarcodeID %in% sampD$BarcodeID, ]
@@ -243,7 +245,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
                     paste(spec4$BarcodeID, spec4$SpeciesID) == FALSE,]
 
   spec5 <- bind_rows(spec4, combs1)
-  spec5[is.na(spec5)] <- 0          # ignore warning, this is b/c notes are in there....fix, do we need notes?
+  # spec5[is.na(spec5)] <- 0            # warning thrown here, b/c 'notes' is a factor, maybe add stringsAsFactors=FALSE when reading .csv?
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
   spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'Extra', 'CountTotal')) ]
   rownames(spec7) <- 1:dim(spec7)[1]
@@ -282,11 +284,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   regs <- spec7[spec7$SpeciesID %in% sppregs,]
   # specB <- regs[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
   specB <- regs[,money.cols]
-  # reps <- c(0.5, 1:20)
-  reps <- seq(0.5, 20.5, 1)  # think this should be the midpoint of each bin (i.e., .5, 1.5, 2.5, ect....)
+  reps <- c(0.5, 1:20)                                                                           # should this be reps <- c(.25, 1:20) ?
   lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
   ABs <- sppl2[match(regs$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
-  biom1 <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
+  biom1 <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)    # think we should carry more digits in the mass estimates
   biomsum <- rowSums(biom1)
   biom2 <- regs
   # biom2[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')] <- biom1
