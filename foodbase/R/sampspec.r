@@ -285,7 +285,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in%
                     paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
 
-  spec5 <- bind_rows(spec3, combs1)
+  spec5 <- dplyr::bind_rows(spec3, combs1)
   if(attributes(samp)$gear == "Drift"){spec5$Notes = as.character(spec5$Notes)}
   spec5[is.na(spec5)] <- 0            # warning thrown here, b/c 'notes' is a factor, maybe add stringsAsFactors=FALSE when reading .csv?
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
@@ -348,7 +348,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x) c(mean(x), median(x), sd(x)))), 2)
     stat1$BiomassTotal <- nbiomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), paste(regs1$BarcodeID, regs1$SpeciesID))]
     stat1$Notes <- spec3$Notes
-    stat2 <- bind_rows(stat1, combs1)
+    stat2 <- dplyr::bind_rows(stat1, combs1)
     stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
     stat2$Notes[is.na(stat2$Notes)] <- ''
     stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal) & stat2$SpeciesID %in% sppregs, 0, stat2$BiomassTotal)

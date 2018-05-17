@@ -1,7 +1,7 @@
 # foodbase
 **Functions for Reading and Working with Foodbase Data**
 
-This packages contains some functions for importing and working with data from the Foodbase database. Currently only implemented for Drift data, with support for other gear types hopefully coming soon!
+This packages contains some functions for importing and working with data from the Foodbase database. Currently only implemented for Drift and Fish Guts data.
 
 __Current list of functions:__  
 __readDB__: Pulls exported data from the Foodbase database for use in R.  
