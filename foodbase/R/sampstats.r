@@ -70,7 +70,7 @@ sampstats <- function(sampspec){
   stat1[is.na(stat1)] <- 0
 
   fsize <- function(spec){
-    specB <- spec[, c('Bpt5', 'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12', 'B13', 'B14', 'B15', 'B16', 'B17', 'B18', 'B19', 'B20')]
+    specB <- spec[, paste0('B', 0:20)]
     specB2 <- aggregate(. ~ spec$BarcodeID, specB, sum)
     specB3 <- specB2[,-1]
     lsize1 <- apply(specB3, 1, function(x) rep(c(0.5, 1:20), x))
