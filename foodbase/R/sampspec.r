@@ -43,8 +43,8 @@
 #' \code{species = "Big4"} to subset only for species codes \code{CHIL},
 #' \code{SIML}, \code{NZMS}, and \code{GAM}, or the shortcut \code{species =
 #' "Big9"} to subset only for species codes \code{CHIL}, \code{CHIP},
-#' \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{LUMB}, \code{NZMS},
-#' and \code{GAM}.
+#' \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{OLIG}, \code{NZMS},
+#' and \code{GAMM}.
 #'
 #' The argument \code{gear} can be specified (e.g., \code{gear = 'Drift'}), and
 #' in general there is no harm in doing so. However, in most cases \code{gear}
