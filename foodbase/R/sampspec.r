@@ -75,7 +75,7 @@
 #' Note on units: All count data are presented as raw counts (i.e., just number
 #' of bugs, and not density, rate, or concentration). All biomass values are in
 #' \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m},
-#' \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}.
+#' \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3}.
 #' \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal
 #' \code{hours}.
 #'
@@ -165,7 +165,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   }
 
   # change ID names for FishGut (so code works below), then change back at the end
-  if(attributes(samp)$gear == "FishGut"){
+  if(gear == "FishGut"){
     names(samp0)[which(names(samp0) == "PITTagID")] = "BarcodeID"
     names(spec0)[which(names(spec0) == "PITTagID")] = "BarcodeID"
   }
@@ -186,10 +186,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
       spec0 <- spec0
     } else {
       if(species == "Big4"){
-        spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'SIML', 'GAM', 'NZMS'),]
+        spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'SIML', 'GAMM', 'NZMS'),]
       } else {
         if(species == "Big9"){
-          spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAM', 'NZMS', 'LUMB'),]
+          spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAMM', 'NZMS', 'OLIG'),]
         } else {
           spec0 <- spec0[spec0$SpeciesID == species,]
         }
@@ -215,7 +215,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   spec.cols = c('BarcodeID', 'SpeciesID', money.cols(), 'CountTotal', 'Notes')
 
-  if(attributes(samp)$gear == "Drift"){
+  if(gear == "Drift"){
     spec1 <- spec0[, c('BarcodeID', 'SpeciesID', money.cols("C"), 'CountTotal', 'Notes')]
     colnames(spec1) <- spec.cols
 
@@ -225,7 +225,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     }
 
   # Subset columns to match case for drift above
-  if(attributes(samp)$gear == "FishGut"){
+  if(gear == "FishGut"){
 
     # exclude 'Notes' here, as it's only returned for the drift, when running stats
     spec1 <- spec0[,which(colnames(spec0) %in% spec.cols[-length(spec.cols)])]
@@ -268,9 +268,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # Subset species list, reduce to only columns of interest
   sppl1 <- sppl0[sppl0$SpeciesID %in% spec3$SpeciesID,]
   sppl2 <- sppl1[, c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order',
-                     'Family', 'Genus', 'Species', 'Habitat', 'Stage', 'FFG',
-                     'Description', 'CommonName', 'RegressionA',
-                     'RegressionB', 'Notes')]
+					 'Suborder', 'Superfamily', 'Family', 'Subfamily', 
+					 'Genus', 'Species', 'Habitat', 'Stage', 'FFG',
+                     'Description', 'RegressionA', 'RegressionB', 
+					 'Notes')]
   sppl2 <- droplevels(sppl2)
   rownames(sppl2) <- 1:dim(sppl2)[1]
 
@@ -286,7 +287,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
                     paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
 
   spec5 <- dplyr::bind_rows(spec3, combs1)
-  if(attributes(samp)$gear == "Drift"){spec5$Notes = as.character(spec5$Notes)}
+  if(gear == "Drift"){spec5$Notes = as.character(spec5$Notes)}
   spec5[is.na(spec5)] <- 0            # warning thrown here, b/c 'notes' is a factor, maybe add stringsAsFactors=FALSE when reading .csv?
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
   spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'Extra', 'CountTotal')) ]
@@ -359,7 +360,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   }
 
   # Convert 'BarcodeID' to 'PITTagID' if FishGut
-  if(attributes(samp)$gear == "FishGut"){
+  if(gear == "FishGut"){
 
     # can't figure this out with lapply.... (after we create lout)?
     # lapply(seq_along(lout), function(i) {names(lout[[i]])[which(names(lout[[i]]) == "BarcodeID")]})

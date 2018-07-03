@@ -73,20 +73,16 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
   dbdir.exists <- dir.exists(path = dbdir)
 
   # Update/add data as necessary
-  if(dbdir.exists == FALSE | updater != FALSE){
+  if(dbdir.exists == FALSE | (dbdir.exists == TRUE & updater != FALSE)){
 	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
     if(updater == 'GitHub' | netcheck == 0){
       path <- paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/')
     } else {
       path <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')
     }
-    dir.create(dbdir, showWarnings = FALSE)
-    samp <- read.csv(paste0(path, gear, 'Sample.csv'))
-    spec <- read.csv(paste0(path, gear, 'Specimen.csv'))
-    sppl <- read.csv(paste0(path, 'SpeciesList.csv'))
-    write.csv(samp,paste0(dbdir,'/', gear, 'Sample.csv'), row.names = FALSE)
-    write.csv(spec,paste0(dbdir,'/', gear, 'Specimen.csv'), row.names = FALSE)
-    write.csv(sppl,paste0(dbdir,'/', 'SpeciesList.csv'), row.names = FALSE)
+    if(dbdir.exists == FALSE){dir.create(dbdir, showWarnings = FALSE)}
+	files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
+	file.copy(paste0(path, files), paste0(dbdir,'/'), overwrite = TRUE, copy.date = TRUE)
   }
 
   # Read in the data

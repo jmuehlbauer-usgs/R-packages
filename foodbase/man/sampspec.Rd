@@ -51,7 +51,7 @@ Creates a list containing the following dataframes:\cr
 Note on units: All count data are presented as raw counts (i.e., just number
 of bugs, and not density, rate, or concentration). All biomass values are in
 \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m},
-\code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3/s}.
+\code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3}.
 \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal
 \code{hours}.
 
