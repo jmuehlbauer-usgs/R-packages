@@ -175,7 +175,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   spec0 <- spec0[order(spec0$BarcodeID, spec0$SpeciesID),]
   sppl0 <- sppl0[order(sppl0$SpeciesID),]
 
-  # Sample Date, Process Date to date format                              # I think this is already handled in readDB, remove here?
+  # Sample Date, Process Date to date format
   samp0$Date <- as.Date(samp0$Date, format = '%m/%d/%Y')
   samp0$ProcessDate <- as.Date(samp0$ProcessDate, format = '%m/%d/%Y')
 
@@ -204,7 +204,6 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   #------------------------------------
   # Add same size classes from coarse and fine sieves together for drift
-  # money.cols = as.character(paste0("B", c(0:20)))
   money.cols = function(letter = NULL){
     if(is.null(letter)){
       as.character(paste0("B", c(0:20)))
@@ -278,7 +277,6 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   #------------------------------------
   # Add implicit 0 taxa counts into data, remove NOBUs
 
-  # Does this need to be ordered.........? (as combs is?)
   combs <- expand.grid(BarcodeID = unique(samp2$BarcodeID),
                       SpeciesID = unique(spec3$SpeciesID))
 
@@ -288,7 +286,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   spec5 <- dplyr::bind_rows(spec3, combs1)
   if(gear == "Drift"){spec5$Notes = as.character(spec5$Notes)}
-  spec5[is.na(spec5)] <- 0            # warning thrown here, b/c 'notes' is a factor, maybe add stringsAsFactors=FALSE when reading .csv?
+  spec5[is.na(spec5)] <- 0
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
   spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'Extra', 'CountTotal')) ]
   rownames(spec7) <- 1:dim(spec7)[1]
@@ -314,10 +312,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   sppregs <- sppl2[!is.na(sppl2$RegressionA) & !is.na(sppl2$RegressionB), 'SpeciesID']
   regs <- spec7[spec7$SpeciesID %in% sppregs,]
   specB <- regs[,money.cols()]
-  reps <- c(0.5, 1:20)                                                                           # should this be reps <- c(.25, 1:20) ?
+  reps <- c(0.5, 1:20)
   lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
   ABs <- sppl2[match(regs$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
-  biom1 <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)    # think we should carry more digits in the mass estimates
+  biom1 <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
   biomsum <- rowSums(biom1)
   biom2 <- regs
   biom2[, money.cols()] <- biom1
