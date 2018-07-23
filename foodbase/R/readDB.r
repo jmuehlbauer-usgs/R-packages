@@ -73,16 +73,17 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
   dbdir.exists <- dir.exists(path = dbdir)
 
   # Update/add data as necessary
+  netpath <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')
   if(dbdir.exists == FALSE | (dbdir.exists == TRUE & updater != FALSE)){
-	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
-    if(updater == 'GitHub' | netcheck == 0){
-      path <- paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/')
-    } else {
-      path <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')
-    }
     if(dbdir.exists == FALSE){dir.create(dbdir, showWarnings = FALSE)}
-	files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
-	file.copy(paste0(path, files), paste0(dbdir,'/'), overwrite = TRUE, copy.date = TRUE)
+  	files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
+	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
+    if(updater == 'GitHub' | dir.exists(netpath) == FALSE){
+      gitpath <- paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/')
+	  lapply(files, function(x){download.file(paste0(gitpath, x), paste0(dbdir, '/', x))})
+    } else {
+	  file.copy(paste0(netpath, files), paste0(dbdir,'/'), overwrite = TRUE, copy.date = TRUE)
+    }
   }
 
   # Read in the data
