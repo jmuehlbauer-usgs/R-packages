@@ -88,9 +88,9 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
 
   # Read in the data
   if(type == 'SpeciesList'){
-    dat <- read.csv(paste0(dbdir, '/SpeciesList.csv'))
+    dat <- read.csv(paste0(dbdir, '/SpeciesList.csv'), stringsAsFactors = FALSE)
   } else {
-    dat <- read.csv(paste0(dbdir, '/', gear, type, '.csv'))
+    dat <- read.csv(paste0(dbdir, '/', gear, type, '.csv'), stringsAsFactors = FALSE)
     if(type == 'Sample'){
       dat$Date <- as.Date(dat$Date, format = '%m/%d/%Y')
       dat$ProcessDate <- as.Date(dat$ProcessDate, format = '%m/%d/%Y')
