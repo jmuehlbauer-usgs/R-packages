@@ -359,22 +359,6 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     stat4 <- droplevels(stat4)
   }
 
-  # Convert 'BarcodeID' to 'PITTagID' if FishGut
-  if(gear == "FishGut"){
-
-    # can't figure this out with lapply.... (after we create lout)?
-    # lapply(seq_along(lout), function(i) {names(lout[[i]])[which(names(lout[[i]]) == "BarcodeID")]})
-
-    names(samp2)[which(names(samp2) == "BarcodeID")] = "PITTagID"
-    names(snew5)[which(names(snew5) == "BarcodeID")] = "PITTagID"
-    names(nbiom3)[which(names(nbiom3) == "BarcodeID")] = "PITTagID"
-    names(spec7)[which(names(spec7) == "BarcodeID")] = "PITTagID"
-    names(biom3)[which(names(biom3) == "BarcodeID")] = "PITTagID"
-    names(sampM)[which(names(sampM) == "BarcodeID")] = "PITTagID"
-    names(sampD)[which(names(sampD) == "BarcodeID")] = "PITTagID"
-    names(specD)[which(names(specD) == "BarcodeID")] = "PITTagID"
-  }
-
   #------------------------------------
   # Create and spit out list
   lout <- list('Samples' = samp2,
@@ -388,6 +372,12 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
                'SpecDel' = specD,
                'Statistics' = stat4)
 
+  # Convert 'BarcodeID' to 'PITTagID' if FishGut
+  if(gear == "FishGut"){
+    lout <- lapply(lout, function(x) {if('BarcodeID' %in% colnames(x)){colnames(x)[which(colnames(x) == 'BarcodeID')] <- 'PITTagID'}; x})
+  }
+  
+  # Set gear attribute
   attr(lout, 'gear') <- gear
   return(lout)
 }
