@@ -21,8 +21,7 @@ auto-downloaded data. See Details.}
 Details. Default is \code{"All"}.}
 
 \item{stats}{Whether to calculate total count, size, and biomass data for
-each taxon in each sample. Default is \code{FALSE}. Currently only works
-for \code{Drift}.}
+each taxon in each sample. Default is \code{FALSE}.}
 
 \item{gear}{The sampling gear type of interest (\code{Drift},
 \code{LightTrap}, \code{FishGut}, etc). Should be specified only in rare
@@ -31,18 +30,25 @@ Details.}
 }
 \value{
 Creates a list containing the following dataframes:\cr
-  \code{Samples}: The sample data.\cr \code{Specimens}: The specimen size
+  \code{Samples}: The sample data.\cr
+  \code{Specimens}: The specimen size
   data. Accounts for Count Extra counts by assigning them proportionally to
-  size bins.\cr \code{Biomass}: The specimen biomass data. Accounts for Count
+  size bins.\cr
+  \code{Biomass}: The specimen biomass data. Accounts for Count
   Extra counts by assigning them proportionally to size bins.\cr
   \code{RawSpecimens}: The specimen size data, excluding any Count Extra
-  counts.\cr \code{RawBiomass}: The specimen biomass data, excluding any
-  Count Extra counts.\cr \code{Taxa}: The taxa list of taxa in the
-  dataset.\cr \code{Missing}: Sample data for any samples that don't have
+  counts.\cr
+  \code{RawBiomass}: The specimen biomass data, excluding any
+  Count Extra counts.\cr
+  \code{Taxa}: The taxa list of taxa in the
+  dataset.\cr
+  \code{Missing}: Sample data for any samples that don't have
   corresponding specimen data (or the species of interest) and were cut from
-  the dataframes listed above.\cr \code{SampDel}: Sample data for any samples
+  the dataframes listed above.\cr
+  \code{SampDel}: Sample data for any samples
   that were in the read sample data but were flagged for deletion and
-  therefore cut from the dataframes listed above.\cr \code{SpecDel}: Specimen
+  therefore cut from the dataframes listed above.\cr
+  \code{SpecDel}: Specimen
   data for any samples that were in the read sample data but were flagged for
   deletion and therefore cut from the dataframes listed above.\cr
   \code{Statistics}: Total count, size, and biomass data, by specimen (if
