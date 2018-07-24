@@ -267,9 +267,9 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # Subset species list, reduce to only columns of interest
   sppl1 <- sppl0[sppl0$SpeciesID %in% spec3$SpeciesID,]
   sppl2 <- sppl1[, c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order',
-					 'Suborder', 'Superfamily', 'Family', 'Subfamily', 
+					 'Suborder', 'Superfamily', 'Family', 'Subfamily',
 					 'Genus', 'Species', 'Habitat', 'Stage', 'FFG',
-                     'Description', 'RegressionA', 'RegressionB', 
+                     'Description', 'RegressionA', 'RegressionB',
 					 'Notes')]
   sppl2 <- droplevels(sppl2)
   rownames(sppl2) <- 1:dim(sppl2)[1]
@@ -349,7 +349,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     stat1$Notes <- spec3$Notes
     stat2 <- dplyr::bind_rows(stat1, combs1)
     stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
-    stat2$Notes[is.na(stat2$Notes)] <- ''
+    if(length(stat2$Notes) > 0){stat2$Notes[is.na(stat2$Notes)] <- ''}
     stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal) & stat2$SpeciesID %in% sppregs, 0, stat2$BiomassTotal)
     stat3 <- stat2[stat2$SpeciesID != 'NOBU',]
     stat4 <- stat3[order(stat3$BarcodeID, stat3$SpeciesID),]
@@ -374,7 +374,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   if(gear == "FishGut"){
     lout <- lapply(lout, function(x) {if('BarcodeID' %in% colnames(x)){colnames(x)[which(colnames(x) == 'BarcodeID')] <- 'PITTagID'}; x})
   }
-  
+
   # Set gear attribute
   attr(lout, 'gear') <- gear
   return(lout)
