@@ -74,9 +74,9 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
 
   # Update/add data as necessary
   netpath <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')
-  if(dbdir.exists == FALSE | (dbdir.exists == TRUE & updater != FALSE)){
-    if(dbdir.exists == FALSE){dir.create(dbdir, showWarnings = FALSE)}
-  	files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
+  if(dbdir.exists == FALSE){dir.create(dbdir, showWarnings = FALSE)}
+  files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
+  if(FALSE %in% (files %in% list.files(dbdir)) | updater != FALSE){
 	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
     if(updater == 'GitHub' | dir.exists(netpath) == FALSE){
       gitpath <- paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/')
