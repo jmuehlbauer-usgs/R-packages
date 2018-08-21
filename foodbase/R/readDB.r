@@ -97,5 +97,10 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
     }
   }
   attr(dat, 'gear') <- gear
+  samp1 <- file.mtime(paste0(dbdir, '/', gear, 'Sample.csv'))
+  spec1 <- file.mtime(paste0(dbdir, '/', gear, 'Specimen.csv'))
+  sppl1 <- file.mtime(paste0(dbdir, '/', gear, 'Specimen.csv'))
+  cat(paste0('Data obtained. Dates last modified:\n', gear, ' Samples: ', samp1,
+    '\n', gear, ' Specimens: ', spec1, '\nSpecies List: ', sppl1))
   return(dat)
 }
