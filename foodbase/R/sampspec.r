@@ -187,15 +187,18 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   #------------------------------------
   # Subset to only species of interest
+  spec0z <- spec0
   if(length(species) == 1) {
     if(species == "All" | species == ""){
       spec0 <- spec0
     } else {
       if(species == "Big4"){
-        spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'SIML', 'GAMM', 'NZMS'),]
+        species <- c('CHIL', 'SIML', 'GAMM', 'NZMS')
+        spec0 <- spec0[spec0$SpeciesID %in% species,]
       } else {
         if(species == "Big9"){
-          spec0 <- spec0[spec0$SpeciesID %in% c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAMM', 'NZMS', 'OLIG'),]
+          species <- c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAMM', 'NZMS', 'OLIG')
+          spec0 <- spec0[spec0$SpeciesID %in% species,]
         } else {
           spec0 <- spec0[spec0$SpeciesID == species,]
         }
@@ -242,7 +245,23 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   #------------------------------------
   # Cut specimens that aren't in samples
-  spec2 <- spec1[spec1$BarcodeID %in% samp0$BarcodeID, ]
+  spec2.0 <- spec1[spec1$BarcodeID %in% samp0$BarcodeID, ]
+    spec2.0$Notes <- as.character(spec2.0$Notes)
+
+  # Add 0 count rows in spec for samples that have been processed, but which contain none of the subsetted species
+  bar0 <- unique(spec0z[!(spec0z$BarcodeID %in% spec2.0$BarcodeID),'BarcodeID'])
+  bar1 <- rep(bar0, rep(length(species), length(bar0)))
+  spp1 <- as.factor(rep(species, length(bar0)))
+  coln <- c('BarcodeID', 'SpeciesID', colnames(subset(spec2.0, select = -c(BarcodeID, SpeciesID))))
+  bar2 <- as.data.frame(matrix(nrow = length(bar1), ncol = length(coln)))
+    colnames(bar2) <- coln
+    bar2$BarcodeID <- bar1
+    bar2[, 2] <- spp1
+  bar2[is.na(bar2)] <- 0
+  if(dim(bar2)[1] > 0) {bar2$Notes <- ''}
+  spec2 <- rbind(spec2.0, bar2)
+  spec2 <- spec2[order(as.character(spec2$BarcodeID)),]
+
 
   # Cut samples that aren't in specimens
   samp1 <- samp0[samp0$BarcodeID %in% spec2$BarcodeID, ]
