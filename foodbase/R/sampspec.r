@@ -313,7 +313,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   if(gear == "Drift"){spec5$Notes = as.character(spec5$Notes)}
   spec5[is.na(spec5)] <- 0
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
-  spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'Extra', 'CountTotal')) ]
+  spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'CountTotal')) ]
   rownames(spec7) <- 1:dim(spec7)[1]
   spec7 <- droplevels(spec7)
 
@@ -334,32 +334,23 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   #------------------------------------
   # Get biomasses for each size class, taxon, and site
-  sppregs <- sppl2[!is.na(sppl2$RegressionA) & !is.na(sppl2$RegressionB), 'SpeciesID']
-  regs <- spec7[spec7$SpeciesID %in% sppregs,]
-  specB <- regs[,money.cols()]
+  specB <- spec7[,money.cols()]
   reps <- c(0.5, 1:20)
   lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
-  ABs <- sppl2[match(regs$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
-  biom1 <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
-  biomsum <- rowSums(biom1)
-  biom2 <- regs
-  biom2[, money.cols()] <- biom1
-  biom3 <- biom2[!is.na(biomsum),]
-  rownames(biom3) <- 1:dim(biom3)[1]
-  biom3 <- droplevels(biom3)
+  ABs <- sppl2[match(spec7$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
+  biom1 <- spec7
+    biom1[, money.cols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
+    biom1$Extra <- NA
+    biom1 <- droplevels(biom1)
 
   #------------------------------------
   # Get biomasses again, this time accounting for Count Extras
-  regs1 <- snew5[snew5$SpeciesID %in% sppregs,]
-  specB1 <- regs1[, money.cols()]
-  ABs <- sppl2[match(regs1$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
-  nbiom1 <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
-  nbiomsum <- rowSums(nbiom1)
-  nbiom2 <- regs1
-  nbiom2[, money.cols()] <- nbiom1
-  nbiom3 <- nbiom2[!is.na(nbiomsum),]
-  rownames(nbiom3) <- 1:dim(nbiom3)[1]
-  nbiom3 <- droplevels(nbiom3)
+  specB1 <- snew5[, money.cols()]
+  ABs <- sppl2[match(snew5$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
+  nbiom1 <- snew5
+    nbiom1[, money.cols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
+    nbiom1 <- droplevels(nbiom1)
+  nbiomsum <- rowSums(nbiom1[, money.cols()])
 
   #------------------------------------
   # Combine all summary stats into a dataframe
@@ -370,15 +361,16 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
     stat1 <- spec3[, c('BarcodeID', 'SpeciesID', 'CountTotal')]
     stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x) c(mean(x), median(x), sd(x)))), 2)
-    stat1$BiomassTotal <- nbiomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), paste(regs1$BarcodeID, regs1$SpeciesID))]
+    stat1$BiomassTotal <- nbiomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), paste(snew5$BarcodeID, snew5$SpeciesID))]
     stat1$Notes <- spec3$Notes
     stat2 <- dplyr::bind_rows(stat1, combs1)
     stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
     if(length(stat2$Notes) > 0){stat2$Notes[is.na(stat2$Notes)] <- ''}
-    stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal) & stat2$SpeciesID %in% sppregs, 0, stat2$BiomassTotal)
+    stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal), 0, stat2$BiomassTotal)
     stat3 <- stat2[stat2$SpeciesID != 'NOBU',]
     stat4 <- stat3[order(stat3$BarcodeID, stat3$SpeciesID),]
     rownames(stat4) <- 1:dim(stat4)[1]
+    stat4[is.na(stat4)] <- NA
     stat4 <- droplevels(stat4)
   }
 
@@ -386,9 +378,9 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # Create and spit out list
   lout <- list('Samples' = samp2,
                'Specimens' = snew5,
-               'Biomass' = nbiom3,
+               'Biomass' = nbiom1,
                'RawSpecimens' = spec7,
-               'RawBiomass' = biom3,
+               'RawBiomass' = biom1,
                'Taxa' = sppl2,
                'Missing' = sampM,
                'SampDel' = sampD,

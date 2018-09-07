@@ -1,7 +1,7 @@
 Package: foodbase
 Title: Functions for Reading and Working with Foodbase Data
-Version: 2.1.4
-Date: 2018-09-05
+Version: 2.1.5
+Date: 2018-09-07
 Authors@R: c(
 	person('Jeffrey D.', 'Muehlbauer', email = 'jmuehlbauer@usgs.gov', role = c('aut', 'cre')),
 	person('Michael J.', 'Dodrill', email = 'mdodrill@usgs.gov', role = 'aut'))
