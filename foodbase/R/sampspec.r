@@ -296,8 +296,9 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 					 'Genus', 'Species', 'Habitat', 'Stage', 'FFG',
                      'Description', 'RegressionA', 'RegressionB',
 					 'Notes')]
-  sppl2 <- droplevels(sppl2)
-  rownames(sppl2) <- 1:dim(sppl2)[1]
+    sppl2 <- sppl2[sppl2$SpeciesID != 'NOBU',]
+    sppl2 <- droplevels(sppl2)
+    rownames(sppl2) <- 1:dim(sppl2)[1]
 
   #------------------------------------
   # Add implicit 0 taxa counts into data, remove NOBUs
