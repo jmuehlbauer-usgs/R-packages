@@ -43,6 +43,4 @@ myout <- ordmat(sampspec = foo3, type = "biomass")
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
 }
-\concept{
-access, database, ordination
-}
+\concept{access, database, ordination}

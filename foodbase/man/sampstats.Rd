@@ -38,6 +38,4 @@ myout <- sampstats(foo3)
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
 }
-\concept{
-access, database
-}
+\concept{access, database}

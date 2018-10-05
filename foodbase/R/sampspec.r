@@ -170,8 +170,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     sppl0 <- sppl
   }
 
-  # change ID names for FishGut (so code works below), then change back at the end
+  # Remove DateTime "FishGutID" and change ID names for FishGut (so code works below), then change back at the end
   if(gear == "FishGut"){
+    samp0 <- samp0[, -which(names(samp0) == "FishGutID")]
+    spec0 <- spec0[, -which(names(spec0) == "FishGutID")]
     names(samp0)[which(names(samp0) == "PITTagID")] = "BarcodeID"
     names(spec0)[which(names(spec0) == "PITTagID")] = "BarcodeID"
   }
@@ -234,13 +236,9 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   # Subset columns to match case for drift above
   if(gear == "FishGut"){
-
-    # exclude 'Notes' here, as it's only returned for the drift, when running stats
-    spec1 <- spec0[,which(colnames(spec0) %in% spec.cols[-length(spec.cols)])]
-
+    spec1 <- spec0[, -which(colnames(spec0) == 'BExtra')]
     # Note: The old aggregate & count extra have been added together in the db
     spec1$Extra = spec0$BExtra
-    spec1$CountTotal = rowSums(spec0[,money.cols()], na.rm = T) + spec1$Extra
   }
 
   #------------------------------------
@@ -261,7 +259,6 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   if(dim(bar2)[1] > 0) {bar2$Notes <- ''}
   spec2 <- rbind(spec2.0, bar2)
   spec2 <- spec2[order(as.character(spec2$BarcodeID)),]
-
 
   # Cut samples that aren't in specimens
   samp1 <- samp0[samp0$BarcodeID %in% spec2$BarcodeID, ]
@@ -309,10 +306,10 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # only the combos that aren't already in the spec
   combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in%
                     paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
-
   spec5 <- dplyr::bind_rows(spec3, combs1)
-  if(gear == "Drift"){spec5$Notes = as.character(spec5$Notes)}
-  spec5[is.na(spec5)] <- 0
+    nums <- which(sapply(spec5, class) != 'factor' & sapply(spec5, class) != 'character')
+    spec5$Notes = as.character(spec5$Notes)
+    spec5[, nums][is.na(spec5[, nums])] <- 0
   spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
   spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'CountTotal')) ]
   rownames(spec7) <- 1:dim(spec7)[1]
@@ -321,9 +318,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   #------------------------------------
   # Build new spec dataframe with Count Extra factored into size classes
   snew1 <- spec6
-
   snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
-
   snew2 <- snew1[, money.cols()]
   snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
   snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)

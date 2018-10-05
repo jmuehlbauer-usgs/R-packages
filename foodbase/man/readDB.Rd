@@ -75,6 +75,4 @@ loc <- readDB()
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov} and Michael J. Dodrill, \email{mdodrill@usgs.gov}
 }
-\concept{
-access, database
-}
+\concept{access, database}
