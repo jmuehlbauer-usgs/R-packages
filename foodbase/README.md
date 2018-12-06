@@ -6,8 +6,8 @@ This packages contains some functions for importing and working with data from t
 __Installation instructions:__  
 In R, paste the following lines of code:  
 `require(devtools)`  
-`install_github(repo='jmuehlbauer-usgs/R-packages',subdir='TEST')`  
-Note that if `devtools` is not already installed, you will need to install that first (`install.packages('devtools')`).
+`install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "foodbase")`  
+Note that if `devtools` is not already installed, you will need to install that first (`install.packages("devtools")`).
 
 __Current list of functions:__  
 __readDB__: Pulls exported data from the Foodbase database for use in R.  
