@@ -9,7 +9,7 @@ Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
 Description: This packages contains some functions for importing and working 
 	with data from the Foodbase database. Currently only implemented for Drift and Fish Guts data.
 Depends:
-    R (>= 3.2.1) 
+    R (>= 3.2.1)
 Imports:
 	dplyr (>= 0.7.4)
 License: GPL-3
