@@ -1,3 +1,12 @@
+##### packload function for installing, updating, and loading packages #####
+	## Last updated 1 July 2019 by J.D. Muehlbauer
+	
+## Function checks if a package is currently installed on machine.
+	## If not, it installs it (via CRAN or else jmuehlbauer-usgs/R-packages).
+	## Also has an 'updater' function to update the packages if requested.
+	## Loads all packages fed to the function too.
+	## The 'quiet' argument does all this as quietly as possible.
+		
 packload <- function(packages, updater = FALSE, quiet = TRUE){
 	## Check for currently installed packages
 	packs <- vector()
@@ -54,4 +63,3 @@ packload <- function(packages, updater = FALSE, quiet = TRUE){
 	## Load all these packages
 	loaded <- lapply(packages, require, quietly = quiet, character.only = TRUE)
 }
-packload(c('lme4', 'foodbase'), updater = TRUE)
