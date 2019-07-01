@@ -8,6 +8,9 @@
 	## The quiet argument does all this as quietly as possible.
 		
 packload <- function(packages, updater = FALSE, quiet = TRUE){
+	## Set system environment and download options for GitHub installs to work
+	Sys.setenv(TAR = 'internal')
+	options(download.file.method = "wininet")
 	## Check for currently installed packages
 	packs <- vector()
 	mypacks <- rownames(installed.packages())
@@ -16,16 +19,21 @@ packload <- function(packages, updater = FALSE, quiet = TRUE){
 			packs <- c(packs, packages[i])
 		}
 	}
+	## Specify CRAN mirror if not already done
+	if(is.null(getOption('repos'))){
+		repos <- "https://cran.cnr.berkeley.edu/" 
+	} else{
+		repos <- getOption('repos')
+	}
 	## Install new packages
 	if(length(packs) > 0){
 		avl <- rownames(available.packages())
 		for(i in 1 : length(packs)){
 			## Install from CRAN
 			if(packs[i] %in% avl){
-				install.packages(packs[i], quiet = quiet)
-			}
+				install.packages(packs[i], quiet = quiet, repos = repos)
 			## Install from GitHub jmuehlbauer/R-packages repository
-			else{
+			} else{
 				## Make sure devtools is installed first
 				if(!('devtools' %in% mypacks)){
 					install.packages('devtools', quiet = quiet)
@@ -45,12 +53,11 @@ packload <- function(packages, updater = FALSE, quiet = TRUE){
 		}
 		for(i in 1 : length(packs2)){
 			if(packs2[i] %in% avl){
-				update.packages(packs2[i], quiet = quiet)
-			}
-			else{
+				update.packages(packs2[i], quiet = quiet, repos = repos)
+			} else{
 				if(!('devtools' %in% rownames(installed.packages()))){
 					install.packages('devtools', quiet = quiet)
-				}else{
+				} else{
 					update.packages('devtools', quiet = quiet)
 				}
 				require(devtools)
