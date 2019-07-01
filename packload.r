@@ -3,9 +3,9 @@
 	
 ## Function checks if a package is currently installed on machine.
 	## If not, it installs it (via CRAN or else jmuehlbauer-usgs/R-packages).
-	## Also has an 'updater' function to update the packages if requested.
+	## Also has an updater function to update the packages if requested.
 	## Loads all packages fed to the function too.
-	## The 'quiet' argument does all this as quietly as possible.
+	## The quiet argument does all this as quietly as possible.
 		
 packload <- function(packages, updater = FALSE, quiet = TRUE){
 	## Check for currently installed packages

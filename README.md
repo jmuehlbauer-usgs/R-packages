@@ -9,7 +9,7 @@ __bugR__: Functions for common ecological analyses of invertebrate data
 __foodbase__: Functions for reading and working with Foodbase data  
 __packload__: Function for more easily installing, updating, and loading packages.   
 
-The `packload` function is a sourceable function (not a package) that checks if a package is currently installed on a machine. If not, it installs it (via CRAN or else jmuehlbauer-usgs/R-packages). It also has an 'updater' function to update the packages if requested. Then it loads all packages fed to the function too.
+The `packload` function is a sourceable function (not a package) that checks if a package is currently installed on a machine. If not, it installs it (via CRAN or else jmuehlbauer-usgs/R-packages). It also has an updater function to update the packages if requested. Then it loads all packages fed to the function too.
 
 There is also a `TEST` package and some How-To code that explains how building and installing these packages from GitHub works.  
 
