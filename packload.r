@@ -1,5 +1,5 @@
 ##### packload function for installing, updating, and loading packages #####
-	## Last updated 1 July 2019 by J.D. Muehlbauer
+	## Last updated 14 February 2020 by J.D. Muehlbauer
 	
 ## Function checks if a package is currently installed on machine.
 	## If not, it installs it (via CRAN or else jmuehlbauer-usgs/R-packages).
@@ -67,6 +67,12 @@ packload <- function(packages, updater = FALSE, quiet = TRUE){
 			}
 		}
 	}
-	## Load all these packages
-	loaded <- lapply(packages, require, quietly = quiet, character.only = TRUE)
+	## See if any packages are already loaded
+	unloaded <- packages[!packages %in% (.packages())]
+	## Load unloaded packages (or all packages if updater = TRUE)
+	if(updater == TRUE){
+		loaded <- lapply(packages, require, quietly = quiet, character.only = TRUE)
+	} else {
+		loaded <- lapply(unloaded, require, quietly = quiet, character.only = TRUE)	
+	}
 }
