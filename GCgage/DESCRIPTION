@@ -1,0 +1,18 @@
+Package: GCgage
+Title: Download data from Grand Canyon area gages
+Version: 0.9.0
+Date: 2020-06-16
+Authors@R: person('Jeffrey D.', 'Muehlbauer', email = 'jmuehlbauer@usgs.gov', role = c('aut', 'cre'))
+Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
+Description: This packages contains functions for downloading stream gage data available on the US Geological
+		Survey Grand Canyon Monitoring and Research Center website. It also performs basic manipulations on 
+		these data for working in R.
+Depends:
+    R (>= 3.5.0)
+Imports:
+	parallel (>= 3.5.0)
+License: GPL-3
+URL: https://github.com/jmuehlbauer-usgs/R-packages
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.1.1

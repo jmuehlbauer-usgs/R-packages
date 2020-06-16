@@ -1,7 +1,7 @@
 # R-packages
 **Custom packages and functions for R**
 
-These packages are created principally for use by my research group at the [USGS Grand Canyon Monitoring and Research Center] (https://www.usgs.gov/centers/sbsc/gcmrc), to facilitate common `R` tasks that I (and others) carry out with some regularity.  
+These packages are created principally for use by my research group at the [USGS Grand Canyon Monitoring and Research Center](https://www.usgs.gov/centers/sbsc/gcmrc), to facilitate common `R` tasks that I (and others) carry out with some regularity.  
   
 __Current list of packages:__  
 __plots__: Convenience functions for common plotting operations  
