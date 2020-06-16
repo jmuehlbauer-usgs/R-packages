@@ -6,7 +6,7 @@ Description: This packages contains functions for downloading stream gage data a
 __Installation instructions:__  
 In `R`, paste the following lines of code:  
 `require(devtools)`  
-`install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "foodbase")`  
+`install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "GCgage")`  
 Note that if `devtools` is not already installed, you will need to install that first (`install.packages("devtools")`).
 
 __Current list of functions:__  
