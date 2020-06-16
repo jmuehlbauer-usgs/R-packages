@@ -4,7 +4,7 @@
 Description: This packages contains functions for downloading stream gage data available on the US Geological Survey Grand Canyon Monitoring and Research Center [website](https://www.gcmrc.gov/discharge_qw_sediment/stations/GCDAMP). It also performs basic manipulations on these data for working in `R`.
 
 __Installation instructions:__  
-In R, paste the following lines of code:  
+In `R`, paste the following lines of code:  
 `require(devtools)`  
 `install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "foodbase")`  
 Note that if `devtools` is not already installed, you will need to install that first (`install.packages("devtools")`).
