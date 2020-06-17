@@ -7,6 +7,7 @@ __Current list of packages:__
 __plots__: Convenience functions for common plotting operations  
 __bugR__: Functions for common ecological analyses of invertebrate data  
 __foodbase__: Functions for reading and working with Foodbase data  
+__GCgage__: Functions for downloading data from Grand Canyon area gages.   
 __packload__: Function for more easily installing, updating, and loading packages.   
 __trueAIC__: Function for comparing AICs from log-transformed response models vs. similar linear versions.   
 
