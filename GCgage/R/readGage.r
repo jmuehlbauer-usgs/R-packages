@@ -167,7 +167,7 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 		}
 		# Cut rows
 		if(cutRows == TRUE){
-			tgagedat4 <- tgagedat3[rowSums(!is.na(tgagedat3[, -1])) > 0,]
+			tgagedat4 <- tgagedat3[rowSums(!is.na(data.frame(tgagedat3[, -1]))) > 0,]
 		} else{
 			tgagedat4 <- tgagedat3
 		}
@@ -177,7 +177,7 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 				x, "'. NAs returned."))
 		} else{
 			if(dim(tgagedat4)[2] == 1 | 
-				sum(colSums(tgagedat4[, -1], na.rm = TRUE)) == 0){
+				sum(colSums(data.frame(tgagedat4[, -1]), na.rm = TRUE)) == 0){
 				message(paste0("Warning: No data available for any of these dates and parameters for gage '", 
 					x, "'. NAs returned."))
 				}
@@ -201,7 +201,7 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 	}
 	# Error check for gage parameter name format
 	vvars1 <- vars[!vars %in% gageVars()$Parameter]
-	if(length(vvars1) > 0){
+	if(length(vvars1) > 0 & vars != "all"){
 		vvars2 <- paste0(vvars1, collapse = "', '")
 		stop(paste0("Gage variable(s) '", vvars2, "' are not allowable parameters.
 		Check for typos and use a call to 'gageVars()' to see available parameters."))

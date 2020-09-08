@@ -1,7 +1,7 @@
 Package: GCgage
 Title: Download data from Grand Canyon area gages
-Version: 0.9.0
-Date: 2020-06-16
+Version: 0.9.1
+Date: 2020-09-08
 Authors@R: person('Jeffrey D.', 'Muehlbauer', email = 'jmuehlbauer@usgs.gov', role = c('aut', 'cre'))
 Maintainer: Jeffrey D. Muehlbauer <jmuehlbauer@usgs.gov>
 Description: This packages contains functions for downloading stream gage data available on the US Geological
