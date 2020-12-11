@@ -2,7 +2,7 @@
 
 #' @description Allows data download from gages in and around the Colorado River in Grand Canyon.
 
-#' @param gage Vector of gages to download. See Details.
+#' @param gage Vector of gages to download. See Details. Default is \code{09380000} (Lees Ferry).
 #' @param vars Vector of gage parameters to download. See Details. Default is \code{all}. 
 #' @param startDate The beginning date for the data download (includes this day). See Details. Default is 
 #' \code{first}.
@@ -83,8 +83,8 @@
 #' @export
 
 # Function call
-readGage <- function(gage, vars = "all", startDate = "first", endDate = "today", cutCols = TRUE, 
-	cutRows = TRUE, writeCSV = FALSE){
+readGage <- function(gage = "09380000", vars = "all", startDate = "first", endDate = "today", 
+	cutCols = TRUE, cutRows = TRUE, writeCSV = FALSE){
 	# Gage download and dataframe building, by gage
 	gagefx <- function(x){
 		# Get gage number
@@ -103,13 +103,29 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 			tvars2 <- tvars1[which(!is.na(t1))[t1[which(!is.na(t1))]],]
 		}
 		# Get dates, format html for download
-		vstart1 <- ifelse(startDate == "first", as.character(tgages2$StartDate), 
-			ifelse(startDate == "today", as.character(as.Date(Sys.time())), as.character(startDate)))
-		vend1 <- ifelse(endDate == "first", as.character(tgages2$StartDate),
-			ifelse(endDate == "today", as.character(as.Date(Sys.time())), as.character(endDate)))
-		if(as.Date(vend1) < as.Date(vstart1)){
-			vend1 <- vstart1
+		if(class(startDate) == 'Date'){
+			vstartd <- startDate
+		} else{
+			if(startDate == 'first'){
+				vstartd <- tgages2$StartDate
+			} else{
+				if(startDate == 'today'){
+					vstartd <- as.Date(Sys.time())
+		}}}
+		if(class(endDate) == 'Date'){
+			vendd <- endDate
+		} else{
+			if(endDate == 'first'){
+				vendd <- tgages2$StartDate
+			} else{
+				if(endDate == 'today'){
+					vendd <- as.Date(Sys.time())
+		}}}
+		if(vendd < vstartd){
+			vendd <- vstartd
 		}
+		vstartc <- as.character(vstartd)
+		vendc <- as.character(vendd)
 		vhtml1 <- paste0("&column%5B%5D=inst!", as.character(tvars2$WebCode), "!", vgages1, "!*default*", 
 			collapse = "")
 		# Download data for the specified dates in parallel
@@ -118,7 +134,7 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 			vcores2 <- ifelse(vcores1 == 0, 1, vcores1)
 			cl1 <- parallel::makeCluster(getOption("cl1", vcores2))
 			parallel::clusterExport(cl1, c("tvars2", "vhtml1"), envir = environment())
-			vdates1 <- as.Date(vstart1):as.Date(vend1)
+			vdates1 <- as.Date(vstartd):as.Date(vendd)
 			ldates1 <- split(vdates1, rep(1:vcores2, length.out = length(vdates1), 
 				each = ceiling(length(vdates1)/vcores2)))
 			ldates2 <- lapply(ldates1, function(x){
@@ -144,14 +160,14 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 		# Download data for the specified dates, not in parallel
 		} else{
 			vhtml2 <- paste0("https://www.gcmrc.gov/discharge_qw_sediment/services/agg?beginPosition=", 
-				vstart1, "&endPosition=", vend1, "&column%5B%5D=time!yyyy-MM-dd+HH%3Amm%3Ass!*default*")
+				vstartc, "&endPosition=", vendc, "&column%5B%5D=time!yyyy-MM-dd+HH%3Amm%3Ass!*default*")
 			vhtml3 <- paste0(vhtml2, vhtml1, "&tz=-7&tzInHeader=true&output=tab&download=on")
 			tgagedat2 <- tryCatch({
 				read.delim(vhtml3)
 				}, error = function(cond){
 					tdaterr1 <- matrix(nrow = 2, ncol = 1 + dim(tvars2)[1])
 					tdaterr2 <- as.data.frame(tdaterr1)
-						tdaterr2[, 1] <- as.factor(c(vstart1, vend1))
+						tdaterr2[, 1] <- as.factor(c(vstartc, vendc))
 					return(tdaterr2)
 				})
 				colnames(tgagedat2) <- c("DateTime", as.character(tvars2$Parameter))
@@ -191,6 +207,7 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 		}
 		return(tgagedat5)
 	}
+	
 	# Error check for gage name format
 	vgage1 <- gage[!gage %in% unlist(gages()[, c('Name', 'Number')])]
 	if(length(vgage1) > 0){
@@ -206,17 +223,31 @@ readGage <- function(gage, vars = "all", startDate = "first", endDate = "today",
 		stop(paste0("Gage variable(s) '", vvars2, "' are not allowable parameters.
 		Check for typos and use a call to 'gageVars()' to see available parameters."))
 	}
-	# Error check for gage end date before start date
-	if(nchar(startDate) == 10 & nchar(endDate) == 10){
-		if(as.Date(endDate) < as.Date(startDate)){
-			stop(paste0("The end date (", endDate, ") is prior to the start date (", startDate, ")."))		
-		}
-	}
 	# Error check for gage date format
-	if((nchar(startDate)!= 10 & !(startDate %in% c('first', 'today'))) |
-		(nchar(endDate)!= 10 & !(endDate %in% c('first', 'today')))){
+	datelist <- list(startDate, endDate)
+	badclass <- sapply(datelist, function(x){
+		'try-error' %in% class(try(as.Date(x), silent = TRUE))
+	})
+	if(badclass[1] == FALSE){startDate <- as.Date(startDate)}
+	if(badclass[2] == FALSE){endDate <- as.Date(endDate)}	
+	badchar <- sapply(datelist, function(x){
+		!x %in% c('first', 'today')
+	})
+	if((badclass[1] == TRUE & badchar[1] == TRUE) |
+		(badclass[2] == TRUE & badchar[2] == TRUE)){
 		stop("The start &/or end date format is incorrect.
-		It needs to be either a date in YYYY-MM-DD format, or 'first', or 'today' (in quotes).")		
+		It needs to be either a date (in YYYY-MM-DD, Date, or POSIX format), or 'first', or 'today' (in quotes).")		
+	}
+	# Error check for gage end date before start date
+	if(!TRUE %in% badclass){
+		if(endDate < startDate){
+			warning(paste0("The end date (", endDate, ") is prior to the start date (", startDate, ").",
+			"\nGage data have been downloaded with these dates swapped for one another."),
+				call. = FALSE)	
+			startDateTEMP <- startDate
+			startDate <- endDate
+			endDate <- startDateTEMP
+		}
 	}
 	# Combine dataframes into list
 	tgages1 <- gages()

@@ -4,11 +4,12 @@
 \alias{readGage}
 \title{Download Grand Canyon gage data}
 \usage{
-readGage(gage, vars = "all", startDate = "first", endDate = "today",
-  cutCols = TRUE, cutRows = TRUE, writeCSV = FALSE)
+readGage(gage = "09380000", vars = "all", startDate = "first",
+  endDate = "today", cutCols = TRUE, cutRows = TRUE,
+  writeCSV = FALSE)
 }
 \arguments{
-\item{gage}{Vector of gages to download. See Details.}
+\item{gage}{Vector of gages to download. See Details. Default is \code{09380000} (Lees Ferry).}
 
 \item{vars}{Vector of gage parameters to download. See Details. Default is \code{all}.}
 
