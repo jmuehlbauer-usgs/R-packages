@@ -15,11 +15,11 @@
 #' @param stats Whether to calculate total count, size, and biomass data for
 #'   each taxon in each sample. Default is \code{FALSE}.
 #' @param gear The sampling gear type of interest (\code{Drift},
-#'   \code{LightTrap}, \code{FishGut}, etc). Should be specified only in rare
+#'   \code{LightTrap}, \code{FishGut}). Should be specified only in rare
 #'   cases where you are not working from \code{\link{readDB}} output. See
 #'   Details.
 
-#' @details Currently only \code{Drift} and \code{FishGut} are implemented for
+#' @details Currently only \code{Drift}, \code{LightTrap}, and \code{FishGut} are implemented for
 #' \code{gear}.
 #'
 #' The data are based on data saved locally on your computer from the Foodbase
