@@ -178,7 +178,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     names(spec0)[which(names(spec0) == "PITTagID")] = "BarcodeID"
   }
 
-  # Sort by barcode and SpeciesID
+  # Sort by BarcodeID and SpeciesID
   samp0 <- samp0[order(samp0$BarcodeID),]
   spec0 <- spec0[order(spec0$BarcodeID, spec0$SpeciesID),]
   sppl0 <- sppl0[order(sppl0$SpeciesID),]
@@ -215,22 +215,16 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   #------------------------------------
   # Add same size classes from coarse and fine sieves together for drift
-  money.cols = function(letter = NULL){
-    if(is.null(letter)){
-      as.character(paste0("B", c(0:20)))
-    } else {
-      as.character(paste0(letter, c(0:20)))
-    }
+  sizecols = function(letter = "B"){
+    as.character(paste0(letter, c(0:20)))
   }
 
-  spec.cols = c('BarcodeID', 'SpeciesID', money.cols(), 'CountTotal', 'Notes')
+  speccols = c('BarcodeID', 'SpeciesID', sizecols(), 'CountTotal', 'Notes')
 
   if(gear == "Drift"){
-    spec1 <- spec0[, c('BarcodeID', 'SpeciesID', money.cols("C"), 'CountTotal', 'Notes')]
-    colnames(spec1) <- spec.cols
-
-    spec1[,money.cols()[1:16]] <- spec0[,money.cols("C")[1:16]] + spec0[,money.cols("F")[1:16]]
-
+    spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols("C"), 'CountTotal', 'Notes')]
+    colnames(spec1) <- speccols
+    spec1[, sizecols()[1:16]] <- spec0[, sizecols("C")[1:16]] + spec0[, sizecols("F")[1:16]]
     spec1$Extra = spec0$CExtra + spec0$FExtra
     }
 
@@ -319,7 +313,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # Build new spec dataframe with Count Extra factored into size classes
   snew1 <- spec6
   snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
-  snew2 <- snew1[, money.cols()]
+  snew2 <- snew1[, sizecols()]
   snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
   snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
   colnames(snew4) <- colnames(snew1[1:dim(snew4)[2]])
@@ -330,30 +324,30 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
 
   #------------------------------------
   # Get biomasses for each size class, taxon, and site
-  specB <- spec7[,money.cols()]
+  specB <- spec7[,sizecols()]
   reps <- c(0.5, 1:20)
   lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
   ABs <- sppl2[match(spec7$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
   biom1 <- spec7
-    biom1[, money.cols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
+    biom1[, sizecols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
     biom1$Extra <- NA
     biom1 <- droplevels(biom1)
 
   #------------------------------------
   # Get biomasses again, this time accounting for Count Extras
-  specB1 <- snew5[, money.cols()]
+  specB1 <- snew5[, sizecols()]
   ABs <- sppl2[match(snew5$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
   nbiom1 <- snew5
-    nbiom1[, money.cols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
+    nbiom1[, sizecols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
     nbiom1 <- droplevels(nbiom1)
-  nbiomsum <- rowSums(nbiom1[, money.cols()])
+  nbiomsum <- rowSums(nbiom1[, sizecols()])
 
   #------------------------------------
   # Combine all summary stats into a dataframe
   if(stats == FALSE){
     stat4 <- 'Statistics not computed (stats = FALSE).'
   } else {
-    specB2 <- spec3[, money.cols()]
+    specB2 <- spec3[, sizecols()]
     lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
     stat1 <- spec3[, c('BarcodeID', 'SpeciesID', 'CountTotal')]
     stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x) c(mean(x), median(x), sd(x)))), 2)
