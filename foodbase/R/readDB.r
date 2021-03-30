@@ -32,10 +32,10 @@
 #' specified by \code{type}.
 #'
 #' If not set to \code{FALSE}, the \code{updater} can be set to download new
-#' data from the \code{Network} or from \code{GitHub}. However, it's generally
+#' data from the \code{Network} or from \code{GitLab}. However, it's generally
 #' better to specify only \code{updater = TRUE}, in which case R will check to
 #' see if you are connected to the DOI network and will download data from the
-#' Network if so and from GitHub if not. Although data are pushed to GitHub
+#' Network if so and from GitLab if not. Although data are pushed to GitLab
 #' nightly, the Network data are almost always the most current.
 
 #' @return Creates a dataframe containing the desired data from the Foodbase database.
@@ -78,9 +78,10 @@ readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
   files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
   if(FALSE %in% (files %in% list.files(dbdir)) | updater != FALSE){
 	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
-    if(updater == 'GitHub' | dir.exists(netpath) == FALSE){
-      gitpath <- paste0('https://raw.githubusercontent.com/jmuehlbauer-usgs/Database/master/')
-	  lapply(files, function(x){download.file(paste0(gitpath, x), paste0(dbdir, '/', x))})
+    if(updater == 'GitLab' | dir.exists(netpath) == FALSE){
+      gitpath1 <- 'https://code.usgs.gov/api/v4/projects/5233/repository/files/'
+	  gitpath2 <- '/raw?ref=master&private_token=om_PQCgBNziJf-JFNdhD'
+	  lapply(files, function(x){download.file(paste0(gitpath1, x, gitpath2), paste0(dbdir, '/', x))})
     } else {
 	  file.copy(paste0(netpath, files), paste0(dbdir,'/'), overwrite = TRUE, copy.date = TRUE)
     }

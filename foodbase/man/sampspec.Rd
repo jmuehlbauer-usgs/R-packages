@@ -4,8 +4,14 @@
 \alias{sampspec}
 \title{Read, format, and combine data from the Foodbase database}
 \usage{
-sampspec(samp = "", spec = "", sppl = "", species = "All",
-  stats = FALSE, gear = "")
+sampspec(
+  samp = "",
+  spec = "",
+  sppl = "",
+  species = "All",
+  stats = FALSE,
+  gear = ""
+)
 }
 \arguments{
 \item{samp}{The name of the sample dataframe, if not working from
@@ -57,9 +63,9 @@ Creates a list containing the following dataframes:\cr
 Note on units: All count data are presented as raw counts (i.e., just number
 of bugs, and not density, rate, or concentration). All biomass values are in
 \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m},
-\code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3}.
+\code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3}. For Drift data,
 \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal
-\code{hours}.
+\code{hours} (these units may differ for other gear types).
 
 Note on compatibility: If you plan to use \code{\link{sampstats}} or
 \code{\link{ordmat}} on the \code{sampspec} output, then set \code{stats =
@@ -81,8 +87,8 @@ data, use \code{\link{readDB}} (see Examples).
 The function will look for \code{samp}, \code{spec}, and \code{sppl} within
 the \code{Data/} directory of \code{foodbase}, unless these are specified
 individually. Any entry for \code{samp}, \code{spec}, and \code{sppl}
-overrides data in the \code{Data/} directory of \code{foodbase}. See
-Examples.
+overrides data in the \code{Data/} directory of \code{foodbase} (see
+Examples).
 
 In general, it is best to use the companion function \code{\link{readDB}}
 first to get sample data, subset those sample data, then run \code{sampspec}
@@ -92,7 +98,7 @@ Using \code{species} you can return data for only certain taxa of interest.
 In addition to choosing species individually (e.g., \code{species = "CHIL"}
 or \code{species = c("CHIL", "SIML")}), you can also use the shortcut
 \code{species = "Big4"} to subset only for species codes \code{CHIL},
-\code{SIML}, \code{NZMS}, and \code{GAM}, or the shortcut \code{species =
+\code{SIML}, \code{NZMS}, and \code{GAMM}, or the shortcut \code{species =
 "Big9"} to subset only for species codes \code{CHIL}, \code{CHIP},
 \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{OLIG}, \code{NZMS},
 and \code{GAMM}.
