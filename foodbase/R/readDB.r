@@ -3,7 +3,7 @@
 #' @description Pulls exported data from the Foodbase database for use in R.
 
 #' @param gear The sampling gear type of interest (\code{Drift},
-#'   \code{LightTrap}, \code{FishGut}, etc). Default is \code{Drift}.
+#'   \code{LightTrap}, \code{FishGut}). Default is \code{Drift}.
 #' @param type Whether to download \code{Sample}, \code{Specimen} or
 #'   \code{SpeciesList} (the master species list) data. Default is
 #'   \code{Sample}.
@@ -11,7 +11,7 @@
 #'   Species List data, and from what source. See Details. Default is
 #'   \code{FALSE}.
 
-#' @details Currently only \code{Drift} and \code{FishGut} are implemented for
+#' @details Currently only \code{Drift}, \code{LightTrap}, and \code{FishGut} are implemented for
 #' \code{gear}.
 #'
 #' The \code{type} argument specifies whether to return \code{Sample} data
