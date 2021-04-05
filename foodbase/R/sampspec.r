@@ -214,25 +214,28 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   }
 
   #------------------------------------
-  # Add same size classes from coarse and fine sieves together for drift
-  sizecols = function(letter = "B"){
-    as.character(paste0(letter, c(0:20)))
-  }
-
-  speccols = c('BarcodeID', 'SpeciesID', sizecols(), 'CountTotal', 'Notes')
-
-  if(gear == "Drift"){
-    spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols("C"), 'CountTotal', 'Notes')]
-    colnames(spec1) <- speccols
-    spec1[, sizecols()[1:16]] <- spec0[, sizecols("C")[1:16]] + spec0[, sizecols("F")[1:16]]
-    spec1$Extra = spec0$CExtra + spec0$FExtra
+  # For Drift and FighGuts, add same size classes from coarse and fine sieves together for drift
+  if(gear %in% c("Drift", "FishGut")){
+    sizecols = function(letter = "B"){
+      as.character(paste0(letter, c(0:20)))
     }
+      speccols = c('BarcodeID', 'SpeciesID', sizecols(), 'CountTotal', 'Notes')
 
-  # Subset columns to match case for drift above
-  if(gear == "FishGut"){
-    spec1 <- spec0[, -which(colnames(spec0) == 'BExtra')]
-    # Note: The old aggregate & count extra have been added together in the db
-    spec1$Extra = spec0$BExtra
+    if(gear == "Drift"){
+      spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols("C"), 'CountTotal', 'Notes')]
+      colnames(spec1) <- speccols
+      spec1[, sizecols()[1:16]] <- spec0[, sizecols("C")[1:16]] + spec0[, sizecols("F")[1:16]]
+      spec1$Extra = spec0$CExtra + spec0$FExtra
+      }
+
+    # Subset columns to match case for drift above
+    if(gear == "FishGut"){
+      spec1 <- spec0[, -which(colnames(spec0) == 'BExtra')]
+      # Note: The old aggregate & count extra have been added together in the db
+      spec1$Extra = spec0$BExtra
+    }
+  } else {
+    spec1 <- spec0
   }
 
   #------------------------------------
@@ -300,52 +303,61 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   # only the combos that aren't already in the spec
   combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in%
                     paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
-  spec5 <- dplyr::bind_rows(spec3, combs1)
-    nums <- which(sapply(spec5, class) != 'factor' & sapply(spec5, class) != 'character')
-    spec5$Notes = as.character(spec5$Notes)
-    spec5[, nums][is.na(spec5[, nums])] <- 0
-  spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
-  spec7 <- spec6[order(spec6$BarcodeID, spec6$SpeciesID), -which(names(spec6) %in% c('Notes', 'CountTotal')) ]
-  rownames(spec7) <- 1:dim(spec7)[1]
-  spec7 <- droplevels(spec7)
+  spec4 <- dplyr::bind_rows(spec3, combs1)
+    nums <- which(sapply(spec4, class) != 'factor' & sapply(spec4, class) != 'character')
+    spec4$Notes = as.character(spec4$Notes)
+    spec4[, nums][is.na(spec4[, nums])] <- 0
+  spec5 <- spec4[spec4$SpeciesID != 'NOBU',]
+  spec5dt <- data.table(spec4)
+  spec6 <- spec5dt[order(BarcodeID, SpeciesID),]
 
   #------------------------------------
   # Build new spec dataframe with Count Extra factored into size classes
-  snew1 <- spec6
-  snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
-  snew2 <- snew1[, sizecols()]
-  snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
-  snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
-  colnames(snew4) <- colnames(snew1[1:dim(snew4)[2]])
-  snew4[is.na(snew4)] <- 0
-  snew5 <- snew4[order(snew4$BarcodeID, snew4$SpeciesID),]
-  rownames(snew5) <- 1:dim(snew5)[1]
-  snew5 <- droplevels(snew5)
+  if(gear != "LightTrap"){
+    spec7 <- droplevels(as.data.frame(spec6[, c('Notes', 'CountTotal'):=NULL]))
+    snew1 <- spec5
+    snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
+    snew2 <- snew1[, sizecols()]
+    snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
+    snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
+    colnames(snew4) <- colnames(snew1[1:dim(snew4)[2]])
+    snew4[is.na(snew4)] <- 0
+    snew5 <- snew4[order(snew4$BarcodeID, snew4$SpeciesID),]
+    rownames(snew5) <- 1:dim(snew5)[1]
+    snew5 <- droplevels(snew5)
 
   #------------------------------------
   # Get biomasses for each size class, taxon, and site
-  specB <- spec7[,sizecols()]
-  reps <- c(0.5, 1:20)
-  lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
-  ABs <- sppl2[match(spec7$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
-  biom1 <- spec7
-    biom1[, sizecols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
-    biom1$Extra <- NA
-    biom1 <- droplevels(biom1)
+    specB <- spec7[,sizecols()]
+    reps <- c(0.5, 1:20)
+    lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
+    ABs <- sppl2[match(spec7$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
+    biom1 <- spec7
+      biom1[, sizecols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
+      biom1$Extra <- NA
+      biom1 <- droplevels(biom1)
 
   #------------------------------------
   # Get biomasses again, this time accounting for Count Extras
-  specB1 <- snew5[, sizecols()]
-  ABs <- sppl2[match(snew5$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
-  nbiom1 <- snew5
-    nbiom1[, sizecols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
-    nbiom1 <- droplevels(nbiom1)
-  nbiomsum <- rowSums(nbiom1[, sizecols()])
-
+    specB1 <- snew5[, sizecols()]
+    ABs <- sppl2[match(snew5$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
+    nbiom1 <- snew5
+      nbiom1[, sizecols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
+      nbiom1 <- droplevels(nbiom1)
+    nbiomsum <- rowSums(nbiom1[, sizecols()])
+  } else {
+    spec7 <- droplevels(as.data.frame(spec6[, c('Notes'):=NULL]))
+    snew5 <- as.data.frame(spec5)
+	biom1 <- nbiom1 <- "No biomass data available for light traps."
+  }
+  
   #------------------------------------
   # Combine all summary stats into a dataframe
   if(stats == FALSE){
     stat4 <- 'Statistics not computed (stats = FALSE).'
+  } else {
+	if(gear == "LightTrap"){
+	  stat4 <- snew5
   } else {
     specB2 <- spec3[, sizecols()]
     lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
@@ -362,7 +374,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     rownames(stat4) <- 1:dim(stat4)[1]
     stat4[is.na(stat4)] <- NA
     stat4 <- droplevels(stat4)
-  }
+  }}
 
   #------------------------------------
   # Create and spit out list
