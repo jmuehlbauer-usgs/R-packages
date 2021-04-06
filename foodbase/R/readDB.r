@@ -68,8 +68,6 @@
 ## Function call
 readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
 
-##### Do some intial call checks #####
-
 ## Interpret gear for non-accepted cases
 if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
 	gear1 <- toupper(substr(gear, 1, 1))
@@ -87,39 +85,39 @@ if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
 }
 
 ## Check if the Data folder of foodbase package install location exists
-  dbdir <- paste0(find.package('foodbase'),'/Data')
-  dbdir.exists <- dir.exists(path = dbdir)
+dbdir <- paste0(find.package('foodbase'),'/Data')
+dbdir.exists <- dir.exists(path = dbdir)
 
-  # Update/add data as necessary
-  netpath <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')
-  if(dbdir.exists == FALSE){dir.create(dbdir, showWarnings = FALSE)}
-  files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
-  if(FALSE %in% (files %in% list.files(dbdir)) | updater != FALSE){
+## Update/add data as necessary
+netpath <- paste0('P:/BIOLOGICAL/Foodbase/Database/Exports/')
+if(dbdir.exists == FALSE){dir.create(dbdir, showWarnings = FALSE)}
+files <- paste0(c(paste0(gear, c('Sample', 'Specimen')), 'SpeciesList'), '.csv')
+if(FALSE %in% (files %in% list.files(dbdir)) | updater != FALSE){
 	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
-    if(updater == 'GitLab' | dir.exists(netpath) == FALSE){
-      gitpath1 <- 'https://code.usgs.gov/api/v4/projects/5233/repository/files/'
-	  gitpath2 <- '/raw?ref=master&private_token=om_PQCgBNziJf-JFNdhD'
-	  lapply(files, function(x){download.file(paste0(gitpath1, x, gitpath2), paste0(dbdir, '/', x))})
+	if(updater == 'GitLab' | dir.exists(netpath) == FALSE){
+		gitpath1 <- 'https://code.usgs.gov/api/v4/projects/5233/repository/files/'
+		gitpath2 <- '/raw?ref=master&private_token=om_PQCgBNziJf-JFNdhD'
+		lapply(files, function(x){download.file(paste0(gitpath1, x, gitpath2), paste0(dbdir, '/', x))})
     } else {
-	  file.copy(paste0(netpath, files), paste0(dbdir,'/'), overwrite = TRUE, copy.date = TRUE)
+		file.copy(paste0(netpath, files), paste0(dbdir,'/'), overwrite = TRUE, copy.date = TRUE)
     }
-  }
+}
 
-  # Read in the data
-  if(type == 'SpeciesList'){
-    dat <- read.csv(paste0(dbdir, '/SpeciesList.csv'), stringsAsFactors = FALSE)
-  } else {
-    dat <- read.csv(paste0(dbdir, '/', gear, type, '.csv'), stringsAsFactors = FALSE)
-    if(type == 'Sample'){
-      dat$Date <- as.Date(dat$Date, format = '%m/%d/%Y')
-      dat$ProcessDate <- as.Date(dat$ProcessDate, format = '%m/%d/%Y')
-    }
-  }
-  attr(dat, 'gear') <- gear
-  samp1 <- file.mtime(paste0(dbdir, '/', gear, 'Sample.csv'))
-  spec1 <- file.mtime(paste0(dbdir, '/', gear, 'Specimen.csv'))
-  sppl1 <- file.mtime(paste0(dbdir, '/SpeciesList.csv'))
-  cat(paste0('Data obtained. Dates last modified:\n', gear, ' Samples: ', samp1,
-    '\n', gear, ' Specimens: ', spec1, '\nSpecies List: ', sppl1, '\n'))
-  return(dat)
+## Read in the data
+if(type == 'SpeciesList'){
+	dat <- read.csv(paste0(dbdir, '/SpeciesList.csv'), stringsAsFactors = FALSE)
+} else {
+	dat <- read.csv(paste0(dbdir, '/', gear, type, '.csv'), stringsAsFactors = FALSE)
+	if(type == 'Sample'){
+		dat$Date <- as.Date(dat$Date, format = '%m/%d/%Y')
+		dat$ProcessDate <- as.Date(dat$ProcessDate, format = '%m/%d/%Y')
+	}
+}
+attr(dat, 'gear') <- gear
+samp1 <- file.mtime(paste0(dbdir, '/', gear, 'Sample.csv'))
+spec1 <- file.mtime(paste0(dbdir, '/', gear, 'Specimen.csv'))
+sppl1 <- file.mtime(paste0(dbdir, '/SpeciesList.csv'))
+cat(paste0('Data obtained. Dates last modified/imported:\n', gear, ' Samples: ', samp1,
+	'\n', gear, ' Specimens: ', spec1, '\nSpecies List: ', sppl1, '\n'))
+return(dat)
 }
