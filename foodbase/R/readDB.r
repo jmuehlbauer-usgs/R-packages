@@ -65,10 +65,28 @@
 
 #' @export
 
-# Function call
+## Function call
 readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
 
-  # Check if the Data folder of foodbase package install location exists
+##### Do some intial call checks #####
+
+## Interpret gear for non-accepted cases
+if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
+	gear1 <- toupper(substr(gear, 1, 1))
+	if(gear1 %in% c('D', 'F', 'L',' S', 'B')){
+		gear2 <- ifelse(gear1 == 'D', 'Drift',
+			ifelse(gear1 == 'F', 'FishGut',
+			ifelse(gear1 == 'L', 'LightTrap',
+			ifelse(gear1 == 'S', 'Sticky', 'Benthic'))))
+		message(paste0('Warning: "', gear, 
+			'" is not an acceptable value for gear type. Converted to "', gear2, '."'))
+		gear <- gear2
+	} else {
+		stop(paste0('"', gear, '" is not an acceptable value for gear type. Please correct.'))
+	}
+}
+
+## Check if the Data folder of foodbase package install location exists
   dbdir <- paste0(find.package('foodbase'),'/Data')
   dbdir.exists <- dir.exists(path = dbdir)
 
