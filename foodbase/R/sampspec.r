@@ -117,199 +117,223 @@
 
 #' @export
 
-# Function call
+## Function call
 sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = FALSE, gear = ""){
 
-  # Set local data storage directory and gear type attribute
-  dbdir <- paste0(find.package('foodbase'),'/Data')
-  if(gear == ''){
-    if(is.null(attributes(samp)$gear)){
-	  if(is.null(attributes(spec)$gear)){
-	    if(is.null(attributes(sppl)$gear)){
-          return(message("Invalid 'gear' argument."))
+
+##### Set directories and attributes, do some value checking #####
+
+## Set local data storage directory and gear type attribute
+dbdir <- paste0(find.package('foodbase'), '/Data')
+if(gear == ''){
+	if(is.null(attributes(samp)$gear)){
+		if(is.null(attributes(spec)$gear)){
+			if(is.null(attributes(sppl)$gear)){
+				return(message('Invalid "gear" argument.'))
+			} else{
+				gear <- attributes(sppl)$gear
+			}
 		} else{
-		  gear <- attributes(sppl)$gear
+			gear <- attributes(spec)$gear
 		}
-	  } else{
-	    gear <- attributes(spec)$gear
-	  }
 	} else {
-	  gear <- attributes(samp)$gear
-
+		gear <- attributes(samp)$gear
 	}
-  }
+}
 
-  #------------------------------------
-  # Read in sample data
-  if(is.null(dim(samp))){
-    if(file.exists(paste0(dbdir, '/', gear, 'Sample.csv')) == FALSE){
-      temp0 <- readDB(gear = gear, type = "Sample", updater = TRUE)
-    }
-    samp0 <- read.csv(paste0(dbdir, '/', gear, 'Sample.csv'))
-  } else {
-    samp0 <- samp
-  }
+## Interpret gear for non-accepted cases
+if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
+	gear1 <- toupper(substr(gear, 1, 1))
+	if(gear1 %in% c('D', 'F', 'L',' S', 'B')){
+		gear2 <- ifelse(gear1 == 'D', 'Drift',
+			ifelse(gear1 == 'F', 'FishGut',
+			ifelse(gear1 == 'L', 'LightTrap',
+			ifelse(gear1 == 'S', 'Sticky', 'Benthic'))))
+		warning(paste0('Invalid gear argument ("', gear, '"). Converted to "', gear2, '."'))
+		gear <- gear2
+	} else {
+		stop(paste0('Invalid gear argument ("', gear, '"). Please correct.'))
+	}
+}
 
-  # Read in specimen data
-  if(is.null(dim(spec))){
-    if(file.exists(paste0(dbdir, '/', gear, 'Specimen.csv')) == FALSE){
-      temp0 <- readDB(gear = gear, type = "Specimen", updater = TRUE)
-    }
-    spec0 <- read.csv(paste0(dbdir, '/', gear, 'Specimen.csv'))
-  } else {
-    spec0 <- spec
-  }
 
-  # Read in species list data
-  if(is.null(dim(sppl))){
-    if(file.exists(paste0(dbdir, '/SpeciesList.csv')) == FALSE){
-      temp0 <- readDB(gear = gear, type = "SpeciesList", updater = TRUE)
-    }
-    sppl0 <- read.csv(paste0(dbdir, '/SpeciesList.csv'))
-  } else {
-    sppl0 <- sppl
-  }
+##### Read in data #####
 
-  # Remove DateTime "FishGutID" and change ID names for FishGut (so code works below), then change back at the end
-  if(gear == "FishGut"){
-    samp0 <- samp0[, -which(names(samp0) == "FishGutID")]
-    spec0 <- spec0[, -which(names(spec0) == "FishGutID")]
-    names(samp0)[which(names(samp0) == "PITTagID")] = "BarcodeID"
-    names(spec0)[which(names(spec0) == "PITTagID")] = "BarcodeID"
-  }
+## Create list of data types and their data
+type1 <- c('Sample', 'Specimen', 'SpeciesList')
+type2 <- list(samp, spec, sppl)
+type3 <- list()
 
-  # Sort by BarcodeID and SpeciesID
-  samp0 <- samp0[order(samp0$BarcodeID),]
-  spec0 <- spec0[order(spec0$BarcodeID, spec0$SpeciesID),]
-  sppl0 <- sppl0[order(sppl0$SpeciesID),]
+## Read in Sample, Specimen, and Species List data
+for(i in 1:3){
+	if(i == 3){gear3 <- ''} else{gear3 <- gear}
+	if(is.null(dim(type2[[i]]))){
+		if(file.exists(paste0(dbdir, '/', gear3, type1[i], '.csv')) == FALSE){
+		temp0 <- readDB(gear = gear, type = type1[i], updater = TRUE)
+	}
+	type3[[i]] <- read.csv(paste0(dbdir, '/', gear3, type1[i], '.csv'))
+} else {
+	type3[[i]] <- type2[[i]]
+}
+}
+type4 <- lapply(type3, data.table)
+	names(type4) <- type1
 
-  # Sample Date, Process Date to date format
-  samp0$Date <- as.Date(samp0$Date, format = '%m/%d/%Y')
-  samp0$ProcessDate <- as.Date(samp0$ProcessDate, format = '%m/%d/%Y')
 
-  #------------------------------------
-  # Subset to only species of interest
-  spec0z <- spec0
-  if(length(species) == 1) {
-    if(species == "All" | species == ""){
-      spec0 <- spec0
+##### Clean up data and columns formats #####
+
+## Remove DateTime "FishGutID" and change ID names for FishGut
+	## Note: Done so later code runs. Change back near the end of function call.
+if(gear == "FishGut"){
+	for(i in 1:2){
+		type4[[i]] <- type4[[i]][, FishGutID:=NULL]
+		names(type4[[i]])[which(names(type4[[i]]) == "PITTagID")] <- "BarcodeID"
+	}
+}
+
+## Convert any lower case BarcodeIDs to upper case
+type4 <- lapply(type4, function(x){
+	if('BarcodeID' %in% colnames(x)){
+		x$BarcodeID <- toupper(x$BarcodeID)
+		return(x)
+	} else {
+		return(x)
+	}
+})
+
+## Sort by BarcodeID and SpeciesID
+type4[[1]] <- type4[[1]][order(BarcodeID),]
+type4[[2]] <- type4[[2]][order(BarcodeID, SpeciesID),]
+type4[[3]] <- type4[[3]][order(SpeciesID),]
+
+## Change Sample Date and Process Date to date format
+type4[[1]]$Date <- as.Date(type4[[1]]$Date, format = '%m/%d/%Y')
+type4[[1]]$ProcessDate <- as.Date(type4[[1]]$ProcessDate, format = '%m/%d/%Y')
+
+
+##### Subset, group, combine data #####
+
+## Pull dataframes out of list
+samp0 <- type4[[1]]
+spec0 <- type4[[2]]
+sppl0 <- type4[[3]]
+
+## Subset to only species of interest
+if(length(species) == 1) {
+	if(species == "All" | species == ""){
+		species <- unique(sppl0$SpeciesID)
+		spec0 <- spec0
     } else {
-      if(species == "Big4"){
-        species <- c('CHIL', 'SIML', 'GAMM', 'NZMS')
-        spec0 <- spec0[spec0$SpeciesID %in% species,]
-      } else {
-        if(species == "Big9"){
-          species <- c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAMM', 'NZMS', 'OLIG')
-          spec0 <- spec0[spec0$SpeciesID %in% species,]
-        } else {
-          spec0 <- spec0[spec0$SpeciesID == species,]
-        }
-      }
+		if(species == "Big4"){
+			species <- c('CHIL', 'SIML', 'GAMM', 'NZMS')
+			spec0 <- spec0[spec0$SpeciesID %in% species,]
+		} else {
+			if(species == "Big9"){
+				species <- c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAMM', 'NZMS', 'OLIG')
+				spec0 <- spec0[spec0$SpeciesID %in% species,]
+			} else {
+				spec0 <- spec0[spec0$SpeciesID == species,]
+			}
+		}
     }
-  } else {
-    spec0 <- spec0[spec0$SpeciesID %in% species,]
-    if(dim(spec0)[1] == 0){
-      return(message("Invalid 'species' argument."))
+} else {
+	spec0 <- spec0[spec0$SpeciesID %in% species,]
+    if(nrow(spec0) == 0){
+		return(warning(paste0('Invalid species argument ("', species, '"). Please correct.')))
     }
-  }
+}
 
-  #------------------------------------
-  # For Drift and FighGuts, add same size classes from coarse and fine sieves together for drift
-  if(gear %in% c("Drift", "FishGut")){
-    sizecols = function(letter = "B"){
-      as.character(paste0(letter, c(0:20)))
+## Combine same size classes from coarse and fine sieves 
+	## Note: For Drift and FishGut only
+    ## Note: For FishGut, the old Aggregate and CountExtra have been added together in the database
+if(gear %in% c('Drift', 'FishGut')){
+	sizecols = function(letter = 'B'){
+		as.character(paste0(letter, c(0:20)))
     }
-      speccols = c('BarcodeID', 'SpeciesID', sizecols(), 'CountTotal', 'Notes')
-
-    if(gear == "Drift"){
-      spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols("C"), 'CountTotal', 'Notes')]
-      colnames(spec1) <- speccols
-      spec1[, sizecols()[1:16]] <- spec0[, sizecols("C")[1:16]] + spec0[, sizecols("F")[1:16]]
-      spec1$Extra = spec0$CExtra + spec0$FExtra
-      }
-
-    # Subset columns to match case for drift above
-    if(gear == "FishGut"){
-      spec1 <- spec0[, -which(colnames(spec0) == 'BExtra')]
-      # Note: The old aggregate & count extra have been added together in the db
-      spec1$Extra = spec0$BExtra
+	speccols = c('BarcodeID', 'SpeciesID', sizecols(), 'CountTotal', 'Notes')
+if(gear == 'Drift'){
+    spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols("C"), 'CountTotal', 'Notes')]
+		colnames(spec1) <- speccols
+		spec1[, sizecols()[1:16]] <- spec0[, sizecols("C")[1:16]] + spec0[, sizecols("F")[1:16]]
+		spec1$Extra = spec0$CExtra + spec0$FExtra
+	}
+if(gear == "FishGut"){
+    spec1 <- spec0[, -which(colnames(spec0) == 'BExtra')]
+		spec1$Extra <- spec0$BExtra
     }
-  } else {
-    spec1 <- spec0
-  }
+} else {
+	spec1 <- spec0
+}
 
-  #------------------------------------
-  # Cut specimens that aren't in samples
-  spec2.0 <- spec1[spec1$BarcodeID %in% samp0$BarcodeID, ]
-    spec2.0$Notes <- as.character(spec2.0$Notes)
+## Cut specimens that aren't in samples
+spec2 <- spec1[spec1$BarcodeID %in% samp0$BarcodeID, ]
 
-  # Add 0 count rows in spec for samples that have been processed, but which contain none of the subsetted species
-  bar0 <- unique(spec0z[!(spec0z$BarcodeID %in% spec2.0$BarcodeID),'BarcodeID'])
-  bar1 <- rep(bar0, rep(length(species), length(bar0)))
-  spp1 <- as.factor(rep(species, length(bar0)))
-  coln <- c('BarcodeID', 'SpeciesID', colnames(subset(spec2.0, select = -c(BarcodeID, SpeciesID))))
-  bar2 <- as.data.frame(matrix(nrow = length(bar1), ncol = length(coln)))
-    colnames(bar2) <- coln
-    bar2$BarcodeID <- bar1
-    bar2[, 2] <- spp1
-  bar2[is.na(bar2)] <- 0
-  if(dim(bar2)[1] > 0) {bar2$Notes <- ''}
-  spec2 <- rbind(spec2.0, bar2)
-  spec2 <- spec2[order(as.character(spec2$BarcodeID)),]
+## Add 0 count rows in spec for processed samples containing none of the subsetted species
+bar0 <- unique(type4[[2]][!(type4[[2]]$BarcodeID %in% spec2$BarcodeID),'BarcodeID'])
+if(nrow(bar0) > 0){
+	bar1 <- rep(bar0, rep(length(species), length(bar0)))
+	spp1 <- as.factor(rep(species, length(bar0)))
+	coln <- c('BarcodeID', 'SpeciesID', colnames(spec2[, !c('BarcodeID', 'SpeciesID')]))
+	bar2 <- as.data.frame(matrix(nrow = length(bar1), ncol = length(coln)))
+		colnames(bar2) <- coln
+		bar2$BarcodeID <- bar1
+		bar2[, 2] <- spp1
+		bar2[is.na(bar2)] <- 0
+		if(nrow(bar2) > 0){bar2$Notes <- ''}
+	spec3 <- rbind(spec2, bar2)
+	spec3 <- spec3[order(BarcodeID),]
+} else {
+	spec3 <- spec2
+}
 
-  # Cut samples that aren't in specimens
-  samp1 <- samp0[samp0$BarcodeID %in% spec2$BarcodeID, ]
-  sampM <- samp0[!(samp0$BarcodeID %in% spec2$BarcodeID), ]
-  sampM <- droplevels(sampM)
-  if(dim(sampM)[1] > 0){
-    rownames(sampM) <- 1:dim(sampM)[1]
-  }
+## Cut samples that aren't in specimens
+sampcut <- samp0$BarcodeID %in% spec3$BarcodeID
+samp1 <- samp0[sampcut, ]
+sampM <- samp0[!sampcut, ]
 
-  # Cut samples and specimens that were flagged for deletion
-  samp2 <- samp1[samp1$FlagDelete != 1, ]
-  samp2 <- droplevels(samp2)
-  sampD <- samp1[samp1$FlagDelete == 1, ]
-  sampD <- droplevels(sampD)
-  if(dim(sampD)[1] > 0){
-    rownames(sampD) <- 1:dim(sampD)[1]
-  }
+## Cut samples and specimens that were flagged for deletion
+sampdel <- samp1$FlagDelete == 1
+samp2 <- samp1[!sampdel, ]
+sampD <- samp1[sampdel, ]
+spec3 <- spec3[spec3$BarcodeID %in% samp2$BarcodeID, ]
+specD <- spec3[spec3$BarcodeID %in% sampD$BarcodeID, ]
 
-  spec3 <- spec2[spec2$BarcodeID %in% samp2$BarcodeID, ]
-  spec3 <- droplevels(spec3)
-  specD <- spec2[spec2$BarcodeID %in% sampD$BarcodeID, ]
-  specD <- droplevels(specD)
-  if(dim(specD)[1] > 0){
-    rownames(specD) <- 1:dim(specD)[1]
-  }
+## Subset species list, reduce to only columns of interest
+sppl1 <- sppl0[sppl0$SpeciesID != 'NOBU' & sppl0$SpeciesID %in% spec3$SpeciesID,
+	c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order', 'Suborder', 
+	'Superfamily', 'Family', 'Subfamily', 'Genus', 'Species', 'Habitat', 'Stage', 
+	'FFG', 'Description', 'RegressionA', 'RegressionB', 'Notes')]
 
-  #------------------------------------
-  # Subset species list, reduce to only columns of interest
-  sppl1 <- sppl0[sppl0$SpeciesID %in% spec3$SpeciesID,]
-  sppl2 <- sppl1[, c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order',
-					 'Suborder', 'Superfamily', 'Family', 'Subfamily',
-					 'Genus', 'Species', 'Habitat', 'Stage', 'FFG',
-                     'Description', 'RegressionA', 'RegressionB',
-					 'Notes')]
-    sppl2 <- sppl2[sppl2$SpeciesID != 'NOBU',]
-    sppl2 <- droplevels(sppl2)
-    rownames(sppl2) <- 1:dim(sppl2)[1]
-
-  #------------------------------------
-  # Add implicit 0 taxa counts into data, remove NOBUs
-
-  combs <- expand.grid(BarcodeID = unique(samp2$BarcodeID),
-                      SpeciesID = unique(spec3$SpeciesID))
-
-  # only the combos that aren't already in the spec
+### Below, need to improve speed. To start: https://stackoverflow.com/questions/10405637/use-outer-instead-of-expand-grid
+## Add implicit 0 taxa counts into data, remove NOBUs
+combs <- expand.grid(BarcodeID = unique(samp2$BarcodeID),
+	SpeciesID = unique(spec3$SpeciesID))
+s1 <- Sys.time()
   combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in%
+                    paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
+Sys.time() - s1
+  combs1x <- combs[paste(combs[, 1], combs[, 2]) %in%
                     paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
   spec4 <- dplyr::bind_rows(spec3, combs1)
     nums <- which(sapply(spec4, class) != 'factor' & sapply(spec4, class) != 'character')
     spec4$Notes = as.character(spec4$Notes)
     spec4[, nums][is.na(spec4[, nums])] <- 0
   spec5 <- spec4[spec4$SpeciesID != 'NOBU',]
-  spec5dt <- data.table(spec4)
+  spec5dt <- data.table::data.table(spec4)
   spec6 <- spec5dt[order(BarcodeID, SpeciesID),]
+
+## Add implicit 0 taxa counts into data, remove NOBUs
+barID <- unique(samp2$BarcodeID)
+sppID <- unique(spec3$SpeciesID)
+combs <- CJ(barID, sppID)
+barspp1 <- paste0(combs$barID, combs$sppID)
+barspp2 <- paste0(spec3$BarcodeID, spec3$SpeciesID)
+combs1 <- combs[!barspp1 %in% barspp2,]
+spec4 <- dplyr::bind_rows(spec3, combs1)
+### Above lines need fixing. Do something with joins instead? data.table merge? 
+
+
+
 
   #------------------------------------
   # Build new spec dataframe with Count Extra factored into size classes
@@ -320,18 +344,18 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     snew2 <- snew1[, sizecols()]
     snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
     snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
-    colnames(snew4) <- colnames(snew1[1:dim(snew4)[2]])
+    colnames(snew4) <- colnames(snew1[1:ncol(snew4)])
     snew4[is.na(snew4)] <- 0
     snew5 <- snew4[order(snew4$BarcodeID, snew4$SpeciesID),]
-    rownames(snew5) <- 1:dim(snew5)[1]
+    rownames(snew5) <- 1:nrow(snew5)
     snew5 <- droplevels(snew5)
 
   #------------------------------------
   # Get biomasses for each size class, taxon, and site
     specB <- spec7[,sizecols()]
     reps <- c(0.5, 1:20)
-    lsize <- matrix(reps, ncol = length(reps), nrow = dim(specB)[1], byrow = TRUE)
-    ABs <- sppl2[match(spec7$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
+    lsize <- matrix(reps, ncol = length(reps), nrow = nrow(specB), byrow = TRUE)
+    ABs <- sppl1[match(spec7$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
     biom1 <- spec7
       biom1[, sizecols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
       biom1$Extra <- NA
@@ -340,7 +364,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
   #------------------------------------
   # Get biomasses again, this time accounting for Count Extras
     specB1 <- snew5[, sizecols()]
-    ABs <- sppl2[match(snew5$SpeciesID, sppl2$SpeciesID), c('RegressionA', 'RegressionB')]
+    ABs <- sppl1[match(snew5$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
     nbiom1 <- snew5
       nbiom1[, sizecols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
       nbiom1 <- droplevels(nbiom1)
@@ -371,7 +395,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
     stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal), 0, stat2$BiomassTotal)
     stat3 <- stat2[stat2$SpeciesID != 'NOBU',]
     stat4 <- stat3[order(stat3$BarcodeID, stat3$SpeciesID),]
-    rownames(stat4) <- 1:dim(stat4)[1]
+    rownames(stat4) <- 1:nrow(stat4)
     stat4[is.na(stat4)] <- NA
     stat4 <- droplevels(stat4)
   }}
@@ -383,7 +407,7 @@ sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = F
                'Biomass' = nbiom1,
                'RawSpecimens' = spec7,
                'RawBiomass' = biom1,
-               'Taxa' = sppl2,
+               'Taxa' = sppl1,
                'Missing' = sampM,
                'SampDel' = sampD,
                'SpecDel' = specD,
