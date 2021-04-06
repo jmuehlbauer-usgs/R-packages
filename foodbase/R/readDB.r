@@ -76,11 +76,10 @@ if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
 			ifelse(gear1 == 'F', 'FishGut',
 			ifelse(gear1 == 'L', 'LightTrap',
 			ifelse(gear1 == 'S', 'Sticky', 'Benthic'))))
-		message(paste0('Warning: "', gear, 
-			'" is not an acceptable value for gear type. Converted to "', gear2, '."'))
+		warning(paste0('Invalid gear argument ("', gear, '"). Converted to "', gear2, '."'))
 		gear <- gear2
 	} else {
-		stop(paste0('"', gear, '" is not an acceptable value for gear type. Please correct.'))
+		stop(paste0('Invalid gear argument ("', gear, '"). Please correct.'))
 	}
 }
 
