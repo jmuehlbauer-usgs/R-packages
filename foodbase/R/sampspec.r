@@ -254,12 +254,14 @@ if(gear %in% c('Drift', 'FishGut')){
 if(gear == 'Drift'){
     spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols('C'), 'CountTotal', 'Notes')]
 		colnames(spec1) <- speccols
-		spec1[, sizecols()[1:16]] <- spec0[, sizecols('C')[1:16]] + spec0[, sizecols('F')[1:16]]
-		spec1$Extra = spec0$CExtra + spec0$FExtra
+		spec1[, sizecols()[1:16]] <- spec0[, sizecols('C')[1:16], with = FALSE] + 
+			spec0[, sizecols('F')[1:16], with = FALSE]
+		spec1$Extra <- spec0$CExtra + spec0$FExtra
 	}
 if(gear == 'FishGut'){
-    spec1 <- spec0[, -which(colnames(spec0) == 'BExtra')]
-		spec1$Extra <- spec0$BExtra
+	ecol1 <- c(which(colnames(spec0) != 'BExtra'), which(colnames(spec0) == 'BExtra'))
+    spec1 <- setcolorder(spec0, ecol1)
+	colnames(spec1)[ncol(spec1)] <- 'Extra'
     }
 } else {
 	spec1 <- spec0
@@ -318,47 +320,42 @@ spec5 <- spec4[spec4$SpeciesID != 'NOBU',]
 
 
 ##### Reassign CountExtra, compute biomass #####
-### Come back to this section to test for drift, fish guts
 
 ## Only applicable to gears other than LightTrap
 if(gear != 'LightTrap'){
 
+### Speed up the rest of this section by working only with the count data (spec3?) and excluding all the zero count rows. Similar for stats.
+
 ## Factor CountExtra into size classes
-	spec6 <- droplevels(as.data.frame(spec5[, c('Notes', 'CountTotal'):=NULL]))
-    snew1 <- spec5
-		snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
-    snew2 <- snew1[, sizecols()]
-    snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
-    snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
-		colnames(snew4) <- colnames(snew1[1:ncol(snew4)])
-    snew4[is.na(snew4)] <- 0
-    snew5 <- snew4[order(snew4$BarcodeID, snew4$SpeciesID),]
-		rownames(snew5) <- 1:nrow(snew5)
+spec6 <- spec5[, .SD, .SDcols = !c('Notes', 'CountTotal')]
+spec5$MeasuredTotal <- spec5$CountTotal - spec5$Extra
+spec7 <- spec5[, sizecols(), with = FALSE]
+spec8 <- round(spec7 + spec7 * spec5$Extra / spec5$MeasuredTotal)
+spec9 <- cbind(spec5$BarcodeID, spec5$SpeciesID, spec8)
+	colnames(spec9) <- colnames(spec5)[1:ncol(spec9)]
+	spec9[is.na(spec9)] <- 0
+	spec9 <- spec9[order(spec9$BarcodeID, spec9$SpeciesID),]
+	rownames(spec9) <- 1:nrow(spec9)
 
-  # Get biomasses for each size class, taxon, and site
-    specB <- spec6[,sizecols()]
-    reps <- c(0.5, 1:20)
-    lsize <- matrix(reps, ncol = length(reps), nrow = nrow(specB), byrow = TRUE)
-    ABs <- sppl1[match(spec6$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
-    biom1 <- spec6
-      biom1[, sizecols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
-      biom1$Extra <- NA
-      biom1 <- droplevels(biom1)
+## Get biomass for each size class, taxon, and site
+reps1 <- c(0.5, 1:20)
+size1 <- matrix(reps1, ncol = length(reps1), nrow = nrow(spec7), byrow = TRUE)
+AB1 <- sppl1[match(spec6$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
+biom1 <- spec6
+	biom1[, sizecols()] <- round(spec7 * (size1^AB1$RegressionB) * AB1$RegressionA, 5)
+	biom1$Extra <- NA
 
-  #------------------------------------
-  # Get biomasses again, this time accounting for Count Extras
-    specB1 <- snew5[, sizecols()]
-    ABs <- sppl1[match(snew5$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
-    nbiom1 <- snew5
-      nbiom1[, sizecols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
-      nbiom1 <- droplevels(nbiom1)
-    nbiomsum <- rowSums(nbiom1[, sizecols()])
+## Get biomass again, this time accounting for CountExtra
+biom2 <- spec9[, sizecols(), with = FALSE]
+AB1 <- sppl1[match(spec9$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
+biom3 <- spec9
+	biom3[, sizecols()] <- round(biom2 * (size1^AB1$RegressionB) * AB1$RegressionA, 2)
 	
 ## Set Biomass and Raw conditions for LightTrap
 } else {
-	snew5 <- spec5
+	spec9 <- spec5
 	spec6 <- 'Raw specimens are identical to Specimens table for LightTrap. Use that table instead.'
-	biom1 <- nbiom1 <- 'No biomass data are available for LightTrap.'
+	biom1 <- biom3 <- 'No biomass data are available for LightTrap.'
 }
   
 
@@ -366,14 +363,15 @@ if(gear != 'LightTrap'){
 
 ## Set conditions for LightTrap or non-computed condition
 if(gear != 'LightTrap' & stats == TRUE){
+	bsum1 <- rowSums(biom3[, sizecols(), with = FALSE])
 	specB2 <- spec3[, sizecols()]
-	lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
+	size12 <- apply(specB2, 1, function(x) rep(reps1, x))
 	stat1 <- spec3[, c('BarcodeID', 'SpeciesID', 'CountTotal')]
-	stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x){ 
+	stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(size12, function(x){ 
 		c(mean(x), median(x), sd(x))
 	})), 2)
-	stat1$BiomassTotal <- nbiomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), 
-		paste(snew5$BarcodeID, snew5$SpeciesID))]
+	stat1$BiomassTotal <- bsum1[match(paste(stat1$BarcodeID, stat1$SpeciesID), 
+		paste(spec9$BarcodeID, spec9$SpeciesID))]
 	stat1$Notes <- spec3$Notes
 	stat2 <- dplyr::bind_rows(stat1, combs1)
 	stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
@@ -398,7 +396,7 @@ if(gear != 'LightTrap' & stats == TRUE){
 ##### Final formatting on tables and list #####
 
 ## Create list
-lout1 <- list('Samples' = samp3, 'Specimens' = snew5, 'Biomass' = nbiom1, 
+lout1 <- list('Samples' = samp3, 'Specimens' = spec9, 'Biomass' = biom3, 
 	'RawSpecimens' = spec6, 'RawBiomass' = biom1, 'Taxa' = sppl1, 'Missing' = sampM, 
 	'SampDel' = sampD, 'SpecDel' = specD, 'Statistics' = stat4)
 
