@@ -184,10 +184,10 @@ type4 <- lapply(type3, data.table)
 
 ## Remove DateTime "FishGutID" and change ID names for FishGut
 	## Note: Done so later code runs. Change back near the end of function call.
-if(gear == "FishGut"){
+if(gear == 'FishGut'){
 	for(i in 1:2){
 		type4[[i]] <- type4[[i]][, FishGutID:=NULL]
-		names(type4[[i]])[which(names(type4[[i]]) == "PITTagID")] <- "BarcodeID"
+		names(type4[[i]])[which(names(type4[[i]]) == 'PITTagID')] <- 'BarcodeID'
 	}
 }
 
@@ -220,15 +220,15 @@ sppl0 <- type4[[3]]
 
 ## Subset to only species of interest
 if(length(species) == 1) {
-	if(species == "All" | species == ""){
+	if(species == 'All' | species == ''){
 		species <- unique(sppl0$SpeciesID)
 		spec0 <- spec0
     } else {
-		if(species == "Big4"){
+		if(species == 'Big4'){
 			species <- c('CHIL', 'SIML', 'GAMM', 'NZMS')
 			spec0 <- spec0[spec0$SpeciesID %in% species,]
 		} else {
-			if(species == "Big9"){
+			if(species == 'Big9'){
 				species <- c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAMM', 'NZMS', 'OLIG')
 				spec0 <- spec0[spec0$SpeciesID %in% species,]
 			} else {
@@ -252,12 +252,12 @@ if(gear %in% c('Drift', 'FishGut')){
     }
 	speccols = c('BarcodeID', 'SpeciesID', sizecols(), 'CountTotal', 'Notes')
 if(gear == 'Drift'){
-    spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols("C"), 'CountTotal', 'Notes')]
+    spec1 <- spec0[, c('BarcodeID', 'SpeciesID', sizecols('C'), 'CountTotal', 'Notes')]
 		colnames(spec1) <- speccols
-		spec1[, sizecols()[1:16]] <- spec0[, sizecols("C")[1:16]] + spec0[, sizecols("F")[1:16]]
+		spec1[, sizecols()[1:16]] <- spec0[, sizecols('C')[1:16]] + spec0[, sizecols('F')[1:16]]
 		spec1$Extra = spec0$CExtra + spec0$FExtra
 	}
-if(gear == "FishGut"){
+if(gear == 'FishGut'){
     spec1 <- spec0[, -which(colnames(spec0) == 'BExtra')]
 		spec1$Extra <- spec0$BExtra
     }
@@ -294,6 +294,7 @@ sampM <- samp0[!sampcut, ]
 ## Cut samples and specimens that were flagged for deletion
 sampdel <- samp1$FlagDelete == 1
 samp2 <- samp1[!sampdel, ]
+samp3 <- samp2[, FlagDelete:=NULL]
 sampD <- samp1[sampdel, ]
 spec3 <- spec3[spec3$BarcodeID %in% samp2$BarcodeID, ]
 specD <- spec3[spec3$BarcodeID %in% sampD$BarcodeID, ]
@@ -304,59 +305,42 @@ sppl1 <- sppl0[sppl0$SpeciesID != 'NOBU' & sppl0$SpeciesID %in% spec3$SpeciesID,
 	'Superfamily', 'Family', 'Subfamily', 'Genus', 'Species', 'Habitat', 'Stage', 
 	'FFG', 'Description', 'RegressionA', 'RegressionB', 'Notes')]
 
-### Below, need to improve speed. To start: https://stackoverflow.com/questions/10405637/use-outer-instead-of-expand-grid
 ## Add implicit 0 taxa counts into data, remove NOBUs
-combs <- expand.grid(BarcodeID = unique(samp2$BarcodeID),
-	SpeciesID = unique(spec3$SpeciesID))
-s1 <- Sys.time()
-  combs1 <- combs[paste(combs$BarcodeID, combs$SpeciesID) %in%
-                    paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
-Sys.time() - s1
-  combs1x <- combs[paste(combs[, 1], combs[, 2]) %in%
-                    paste(spec3$BarcodeID, spec3$SpeciesID) == FALSE,]
-  spec4 <- dplyr::bind_rows(spec3, combs1)
-    nums <- which(sapply(spec4, class) != 'factor' & sapply(spec4, class) != 'character')
-    spec4$Notes = as.character(spec4$Notes)
-    spec4[, nums][is.na(spec4[, nums])] <- 0
-  spec5 <- spec4[spec4$SpeciesID != 'NOBU',]
-  spec5dt <- data.table::data.table(spec4)
-  spec6 <- spec5dt[order(BarcodeID, SpeciesID),]
-
-## Add implicit 0 taxa counts into data, remove NOBUs
-barID <- unique(samp2$BarcodeID)
+	## Note: NOBU is a code for "NO BUgs". But 0-count smaples are already accounted for.
+barID <- unique(samp3$BarcodeID)
 sppID <- unique(spec3$SpeciesID)
-combs <- CJ(barID, sppID)
-barspp1 <- paste0(combs$barID, combs$sppID)
-barspp2 <- paste0(spec3$BarcodeID, spec3$SpeciesID)
-combs1 <- combs[!barspp1 %in% barspp2,]
-spec4 <- dplyr::bind_rows(spec3, combs1)
-### Above lines need fixing. Do something with joins instead? data.table merge? 
+combs1 <- CJ(barID, sppID)
+	colnames(combs1) <- c('BarcodeID', 'SpeciesID')
+spec4 <- merge(combs1, spec3, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
+    nums <- which(!sapply(spec4, class) %in% c('factor', 'character'))
+	for (i in nums){set(spec4,which(is.na(spec4[[i]])), i, 0)}
+spec5 <- spec4[spec4$SpeciesID != 'NOBU',]
 
 
+##### Reassign CountExtra, compute biomass #####
+### Come back to this section to test for drift, fish guts
 
+## Only applicable to gears other than LightTrap
+if(gear != 'LightTrap'){
 
-  #------------------------------------
-  # Build new spec dataframe with Count Extra factored into size classes
-  if(gear != "LightTrap"){
-    spec7 <- droplevels(as.data.frame(spec6[, c('Notes', 'CountTotal'):=NULL]))
+## Factor CountExtra into size classes
+	spec6 <- droplevels(as.data.frame(spec5[, c('Notes', 'CountTotal'):=NULL]))
     snew1 <- spec5
-    snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
+		snew1$MeasuredTotal <- snew1$CountTotal - snew1$Extra
     snew2 <- snew1[, sizecols()]
     snew3 <- round(snew2 + snew2 * snew1$Extra / snew1$MeasuredTotal)
     snew4 <- cbind(snew1$BarcodeID, snew1$SpeciesID, snew3)
-    colnames(snew4) <- colnames(snew1[1:ncol(snew4)])
+		colnames(snew4) <- colnames(snew1[1:ncol(snew4)])
     snew4[is.na(snew4)] <- 0
     snew5 <- snew4[order(snew4$BarcodeID, snew4$SpeciesID),]
-    rownames(snew5) <- 1:nrow(snew5)
-    snew5 <- droplevels(snew5)
+		rownames(snew5) <- 1:nrow(snew5)
 
-  #------------------------------------
   # Get biomasses for each size class, taxon, and site
-    specB <- spec7[,sizecols()]
+    specB <- spec6[,sizecols()]
     reps <- c(0.5, 1:20)
     lsize <- matrix(reps, ncol = length(reps), nrow = nrow(specB), byrow = TRUE)
-    ABs <- sppl1[match(spec7$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
-    biom1 <- spec7
+    ABs <- sppl1[match(spec6$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
+    biom1 <- spec6
       biom1[, sizecols()] <- round(specB * (lsize^ABs$RegressionB) * ABs$RegressionA, 5)
       biom1$Extra <- NA
       biom1 <- droplevels(biom1)
@@ -369,57 +353,94 @@ spec4 <- dplyr::bind_rows(spec3, combs1)
       nbiom1[, sizecols()] <- round(specB1 * (lsize^ABs$RegressionB) * ABs$RegressionA, 2)
       nbiom1 <- droplevels(nbiom1)
     nbiomsum <- rowSums(nbiom1[, sizecols()])
-  } else {
-    spec7 <- droplevels(as.data.frame(spec6[, c('Notes'):=NULL]))
-    snew5 <- as.data.frame(spec5)
-	biom1 <- nbiom1 <- "No biomass data available for light traps."
-  }
+	
+## Set Biomass and Raw conditions for LightTrap
+} else {
+	snew5 <- spec5
+	spec6 <- 'Raw specimens are identical to Specimens table for LightTrap. Use that table instead.'
+	biom1 <- nbiom1 <- 'No biomass data are available for LightTrap.'
+}
   
-  #------------------------------------
-  # Combine all summary stats into a dataframe
-  if(stats == FALSE){
-    stat4 <- 'Statistics not computed (stats = FALSE).'
-  } else {
-	if(gear == "LightTrap"){
-	  stat4 <- snew5
-  } else {
-    specB2 <- spec3[, sizecols()]
-    lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
-    stat1 <- spec3[, c('BarcodeID', 'SpeciesID', 'CountTotal')]
-    stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x) c(mean(x), median(x), sd(x)))), 2)
-    stat1$BiomassTotal <- nbiomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), paste(snew5$BarcodeID, snew5$SpeciesID))]
-    stat1$Notes <- spec3$Notes
-    stat2 <- dplyr::bind_rows(stat1, combs1)
-    stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
-    if(length(stat2$Notes) > 0){stat2$Notes[is.na(stat2$Notes)] <- ''}
-    stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal), 0, stat2$BiomassTotal)
-    stat3 <- stat2[stat2$SpeciesID != 'NOBU',]
-    stat4 <- stat3[order(stat3$BarcodeID, stat3$SpeciesID),]
-    rownames(stat4) <- 1:nrow(stat4)
-    stat4[is.na(stat4)] <- NA
-    stat4 <- droplevels(stat4)
-  }}
 
-  #------------------------------------
-  # Create and spit out list
-  lout <- list('Samples' = samp2,
-               'Specimens' = snew5,
-               'Biomass' = nbiom1,
-               'RawSpecimens' = spec7,
-               'RawBiomass' = biom1,
-               'Taxa' = sppl1,
-               'Missing' = sampM,
-               'SampDel' = sampD,
-               'SpecDel' = specD,
-               'Statistics' = stat4)
+##### Compute statistics #####
 
-  # Convert 'BarcodeID' to 'PITTagID' if FishGut
-  if(gear == "FishGut"){
-    lout <- lapply(lout, function(x) {if('BarcodeID' %in% colnames(x)){colnames(x)[which(colnames(x) == 'BarcodeID')] <- 'PITTagID'}; x})
-  }
+## Set conditions for LightTrap or non-computed condition
+if(gear != 'LightTrap' & stats == TRUE){
+	specB2 <- spec3[, sizecols()]
+	lsize2 <- apply(specB2, 1, function(x) rep(reps, x))
+	stat1 <- spec3[, c('BarcodeID', 'SpeciesID', 'CountTotal')]
+	stat1[, c('SizeMean', 'SizeMedian', 'SizeSD')] <- round(t(sapply(lsize2, function(x){ 
+		c(mean(x), median(x), sd(x))
+	})), 2)
+	stat1$BiomassTotal <- nbiomsum[match(paste(stat1$BarcodeID, stat1$SpeciesID), 
+		paste(snew5$BarcodeID, snew5$SpeciesID))]
+	stat1$Notes <- spec3$Notes
+	stat2 <- dplyr::bind_rows(stat1, combs1)
+	stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
+	if(length(stat2$Notes) > 0){stat2$Notes[is.na(stat2$Notes)] <- ''}
+	stat2$BiomassTotal <- ifelse(stat2$CountTotal==0 & is.na(stat2$BiomassTotal), 0, stat2$BiomassTotal)
+	stat3 <- stat2[stat2$SpeciesID != 'NOBU',]
+	stat4 <- stat3[order(stat3$BarcodeID, stat3$SpeciesID),]
+	rownames(stat4) <- 1:nrow(stat4)
+	stat4[is.na(stat4)] <- NA
+	stat4 <- droplevels(stat4)
 
-  # Set gear attribute
-  attr(lout, 'gear') <- gear
-  return(lout)
+## Set Statistics conditions for LightTrap or non-computed condition
+} else {
+	if(gear == 'LightTrap' & stats == TRUE){
+		stat4 <- 'Statistics are identical to Specimens table for LightTrap. Use that table instead.'	
+	} else {
+		stat4 <- 'Statistics not computed (stats = FALSE).'
+	}
+}
+
+
+##### Final formatting on tables and list #####
+
+## Create list
+lout1 <- list('Samples' = samp3, 'Specimens' = snew5, 'Biomass' = nbiom1, 
+	'RawSpecimens' = spec6, 'RawBiomass' = biom1, 'Taxa' = sppl1, 'Missing' = sampM, 
+	'SampDel' = sampD, 'SpecDel' = specD, 'Statistics' = stat4)
+
+## Convert 'BarcodeID' to 'PITTagID' if FishGut
+if(gear == 'FishGut'){
+	lout1 <- lapply(lout1, function(x){
+		if('BarcodeID' %in% colnames(x)){
+			colnames(x)[which(colnames(x) == 'BarcodeID')] <- 'PITTagID'
+		}
+		return(x)
+	})
+}
+	
+## Convert columns to desired classes, data.tables to dataframes.
+	## Note: Might eventually keep as data.tables instead. But don't want to confuse people for now.
+fact1 <- c('BarcodeID', 'PITTagID', 'FishGutID', 'SpeciesID', 
+	'Region', 'Reach', 'Bank', 'Collector', 'Weather', 'WindSpeed', 'Habitat', 'Battery', 
+	'EntererSample', 'Processor', 'Checker', 'EntererSpecimen', 
+	'Kingdom', 'Phylum', 'Class', 'Order', 'Suborder', 'Superfamily', 'Family', 'Subfamily', 
+	'Genus', 'Species', 'Habitat', 'Stage', 'FFG')
+logi1 <- c('Bats', 'FlagStrange', 'FlagDelete', 'QAQC')
+lout2 <- lapply(lout1, function(x){
+	if(class(x)[1] == 'data.table'){
+		if(dim(x)[1] == 0){
+			l2 <- 'No data are available for this category (probably a good thing!)'
+		} else {
+			fact2 <- which(colnames(x) %in% fact1)
+			logi2 <- which(colnames(x) %in% logi1)
+			l1 <- x[,(fact2):= lapply(.SD, as.factor), .SDcols = fact2]
+			if(length(logi2) > 0){
+				l1 <- x[,(logi2):= lapply(.SD, as.logical), .SDcols = logi2]
+			}
+			l2 <- as.data.frame(l1)
+		}
+	} else{
+		l2 <- x
+	}
+	return(l2)
+})
+
+## Set gear attribute, close function
+attr(lout2, 'gear') <- gear
+return(lout2)
 }
 
