@@ -144,12 +144,12 @@ if(gear == ''){
 ## Interpret gear for non-accepted cases
 if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
 	gear1 <- toupper(substr(gear, 1, 1))
-	if(gear1 %in% c('D', 'F', 'L',' S', 'B')){
+	if(gear1 %in% c('D', 'F', 'L', 'S', 'B')){
 		gear2 <- ifelse(gear1 == 'D', 'Drift',
 			ifelse(gear1 == 'F', 'FishGut',
 			ifelse(gear1 == 'L', 'LightTrap',
 			ifelse(gear1 == 'S', 'Sticky', 'Benthic'))))
-		warning(paste0('Invalid gear argument ("', gear, '"). Converted to "', gear2, '."'))
+		warning(paste0('Invalid gear argument ("', gear, '"). Converted to "', gear2, '".'))
 		gear <- gear2
 	} else {
 		stop(paste0('Invalid gear argument ("', gear, '"). Please correct.'))
