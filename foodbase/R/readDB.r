@@ -11,7 +11,7 @@
 #'   Species List data, and from what source. See Details. Default is
 #'   \code{FALSE}.
 
-#' @details Currently only \code{Drift}, \code{LightTrap}, and \code{FishGut} are implemented for
+#' @details Currently \code{Drift}, \code{LightTrap}, \code{Sticky}, and \code{FishGut} are implemented for
 #' \code{gear}.
 #'
 #' The \code{type} argument specifies whether to return \code{Sample} data
