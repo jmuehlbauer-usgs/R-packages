@@ -232,7 +232,12 @@ if(length(species) == 1) {
 				species <- c('CHIL', 'CHIA', 'CHIP', 'SIML', 'SIMA', 'SIMP', 'GAMM', 'NZMS', 'OLIG')
 				spec0 <- spec0[spec0$SpeciesID %in% species,]
 			} else {
-				spec0 <- spec0[spec0$SpeciesID == species,]
+				if(species == 'Caddis'){
+					species <- sppl0[Order == 'Trichoptera', SpeciesID]
+					spec0 <- spec0[spec0$SpeciesID %in% species,]
+				} else {
+					spec0 <- spec0[spec0$SpeciesID == species,]
+				}
 			}
 		}
     }
