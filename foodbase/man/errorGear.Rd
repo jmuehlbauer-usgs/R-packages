@@ -10,11 +10,11 @@ errorGear(checkGear)
 \item{checkGear}{The sampling gear type of interest (from \code{readDB} or \code{sampspec}).}
 }
 \value{
-Runction proceeds invisibly if the gear type is OK. Otherwise it proceeds with a warning
+Function proceeds invisibly if the gear type is OK. Otherwise it proceeds with a warning
 if it can convert the gear type to something interpretable. Otherwise it returns an error.
 }
 \description{
-Hidden function that makes sure the \code{gear} argument is formatted correctly and attempts to correct it if not.
+Internal function that makes sure the \code{gear} argument is formatted correctly and attempts to correct it if not.
 }
 \details{
 Function checks for common errors in gear formatting such as lower case or misspellings.
