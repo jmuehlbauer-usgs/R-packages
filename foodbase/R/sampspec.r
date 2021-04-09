@@ -122,6 +122,8 @@
 
 #' @export
 
+#' @import data.table
+
 ## Function call
 sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = FALSE, gear = ""){
 
@@ -179,7 +181,7 @@ type4 <- lapply(type3, data.table)
 	## Note: Done so later code runs. Change back near the end of function call.
 if(gear == 'FishGut'){
 	for(i in 1:2){
-		type4[[i]] <- type4[[i]][, FishGutID:=NULL]
+		type4[[i]] <- type4[[i]][, FishGutID:= NULL]
 		names(type4[[i]])[which(names(type4[[i]]) == 'PITTagID')] <- 'BarcodeID'
 	}
 }
@@ -195,9 +197,9 @@ type4 <- lapply(type4, function(x){
 })
 
 ## Sort by BarcodeID and SpeciesID
-type4[[1]] <- type4[[1]][order(BarcodeID),]
-type4[[2]] <- type4[[2]][order(BarcodeID, SpeciesID),]
-type4[[3]] <- type4[[3]][order(SpeciesID),]
+type4[[1]] <- setorder(type4[[1]], BarcodeID)
+type4[[2]] <- setorder(type4[[2]], BarcodeID, SpeciesID)
+type4[[3]] <- setorder(type4[[3]], SpeciesID)
 
 ## Change Sample Date and Process Date to date format
 type4[[1]]$Date <- as.Date(type4[[1]]$Date, format = '%m/%d/%Y')
@@ -286,7 +288,7 @@ sampM <- samp0[!sampcut, ]
 
 ## Cut samples and specimens that were flagged for deletion
 samp2 <- samp1[FlagDelete == 0, ]
-	samp2 <- samp2[, FlagDelete:=NULL]
+	samp2 <- samp2[, FlagDelete:= NULL]
 sampD <- samp1[FlagDelete == 1, ]
 spec4 <- spec3[spec3$BarcodeID %in% samp2$BarcodeID, ]
 specD <- spec3[spec3$BarcodeID %in% sampD$BarcodeID, ]

@@ -47,6 +47,7 @@ install('TEST')
 library(TEST)
 testfx()
 
+
 ##### Shortcut code for foodbase package update #####
 
 ## Document and install the foodbase function
@@ -103,4 +104,4 @@ git push origin master
 
 ## Other users can now install the package from GitHub:
 require(devtools)
-install_github(repo='jmuehlbauer-usgs/R-packages',subdir='TEST')
+install_github(repo='jmuehlbauer-usgs/R-packages',subdir='foodbase')
