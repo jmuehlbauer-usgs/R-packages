@@ -3,7 +3,7 @@
 #' @description Pulls exported data from the Foodbase database for use in R.
 
 #' @param gear The sampling gear type of interest (\code{Drift},
-#'   \code{LightTrap}, \code{FishGut}). Default is \code{Drift}.
+#'   \code{LightTrap}, \code{Sticky}, or \code{FishGut}). Default is \code{Drift}.
 #' @param type Whether to download \code{Sample}, \code{Specimen} or
 #'   \code{SpeciesList} (the master species list) data. Default is
 #'   \code{Sample}.
@@ -11,8 +11,7 @@
 #'   Species List data, and from what source. See Details. Default is
 #'   \code{FALSE}.
 
-#' @details Currently \code{Drift}, \code{LightTrap}, \code{Sticky}, and \code{FishGut} are implemented for
-#' \code{gear}.
+#' @details
 #'
 #' The \code{type} argument specifies whether to return \code{Sample} data
 #' (i.e., sample collection information), \code{Specimen} data (i.e., bug counts
@@ -68,20 +67,8 @@
 ## Function call
 readDB <- function(gear = "Drift", type = "Sample", updater = FALSE){
 
-## Interpret gear for non-accepted cases
-if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
-	gear1 <- toupper(substr(gear, 1, 1))
-	if(gear1 %in% c('D', 'F', 'L', 'S', 'B')){
-		gear2 <- ifelse(gear1 == 'D', 'Drift',
-			ifelse(gear1 == 'F', 'FishGut',
-			ifelse(gear1 == 'L', 'LightTrap',
-			ifelse(gear1 == 'S', 'Sticky', 'Benthic'))))
-		warning(paste0('Invalid gear argument ("', gear, '"). Converted to "', gear2, '".'))
-		gear <- gear2
-	} else {
-		message(paste0('Invalid gear argument ("', gear, '"). Please correct.'))
-	}
-}
+## Error check gear type
+gear <- errorGear(gear)
 
 ## Check if the Data folder of foodbase package install location exists
 dbdir <- paste0(find.package('foodbase'),'/Data')

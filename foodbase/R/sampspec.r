@@ -15,12 +15,11 @@
 #' @param stats Whether to calculate total count, size, and biomass data for
 #'   each taxon in each sample. Default is \code{FALSE}.
 #' @param gear The sampling gear type of interest (\code{Drift},
-#'   \code{LightTrap}, \code{FishGut}). Should be specified only in rare
+#'   \code{LightTrap}, \code{Sticky}, or \code{FishGut}). Should be specified only in rare
 #'   cases where you are not working from \code{\link{readDB}} output. See
 #'   Details.
 
-#' @details Currently only \code{Drift}, \code{LightTrap}, and \code{FishGut} are implemented for
-#' \code{gear}.
+#' @details
 #'
 #' The data are based on data saved locally on your computer from the Foodbase
 #' database when you run the function \code{\link{readDB}}. To update these
@@ -40,10 +39,11 @@
 #' In addition to choosing species individually (e.g., \code{species = "CHIL"}
 #' or \code{species = c("CHIL", "SIML")}), you can also use the shortcut
 #' \code{species = "Big4"} to subset only for species codes \code{CHIL},
-#' \code{SIML}, \code{NZMS}, and \code{GAMM}, or the shortcut \code{species =
+#' \code{SIML}, \code{NZMS}, and \code{GAMM}, the shortcut \code{species =
 #' "Big9"} to subset only for species codes \code{CHIL}, \code{CHIP},
 #' \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{OLIG}, \code{NZMS},
-#' and \code{GAMM}.
+#' and \code{GAMM}, or the shortcut \code{species = "Caddis"} to subset only 
+#' for caddisfly species codes.
 #'
 #' The argument \code{gear} can be specified (e.g., \code{gear = 'Drift'}), and
 #' in general there is no harm in doing so. However, in most cases \code{gear}
@@ -80,10 +80,15 @@
 #'
 #' Note on units: All count data are presented as raw counts (i.e., just number
 #' of bugs, and not density, rate, or concentration). All biomass values are in
-#' \code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m},
-#' \code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3}. For Drift data,
-#' \code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal
-#' \code{hours} (these units may differ for other gear types).
+#' \code{mg} except for the mass of fish whose guts are being analyzed, which are
+#' in \code{g}. All sizes are in \code{mm}. \code{Distance} is in \code{m},
+#' all depths are in \code{ft}, \code{Velocity} is in \code{m/s} and 
+#' \code{Volume} is in \code{m^3}. 
+#' \code{TimeElapsed} is in decmial \code{minutes} for Drift, decimal 
+#' \code{hours} for Light Traps, and decimal \code{days} for Sticky traps.
+#' \code{ProcessTime} is in decimal
+#' \code{hours}. \code{RiverMile} is generally in \code{miles} unless otherwise
+#' specified in the \code{Notes}.
 #'
 #' Note on compatibility: If you plan to use \code{\link{sampstats}} or
 #' \code{\link{ordmat}} on the \code{sampspec} output, then set \code{stats =
@@ -141,20 +146,8 @@ if(gear == ''){
 	}
 }
 
-## Interpret gear for non-accepted cases
-if(!(gear %in% c('Drift', 'FishGut', 'LightTrap', 'Sticky', 'Benthic'))){
-	gear1 <- toupper(substr(gear, 1, 1))
-	if(gear1 %in% c('D', 'F', 'L', 'S', 'B')){
-		gear2 <- ifelse(gear1 == 'D', 'Drift',
-			ifelse(gear1 == 'F', 'FishGut',
-			ifelse(gear1 == 'L', 'LightTrap',
-			ifelse(gear1 == 'S', 'Sticky', 'Benthic'))))
-		warning(paste0('Invalid gear argument ("', gear, '"). Converted to "', gear2, '".'))
-		gear <- gear2
-	} else {
-		stop(paste0('Invalid gear argument ("', gear, '"). Please correct.'))
-	}
-}
+## Error check gear type
+gear <- errorGear(gear)
 
 
 ##### Read in data #####
@@ -383,7 +376,7 @@ if(gear != 'LightTrap' & stats == TRUE){
 ## Set Statistics conditions for LightTrap or non-computed condition
 } else {
 	if(gear == 'LightTrap' & stats == TRUE){
-		stat3 <- 'Statistics are identical to Specimens table for LightTrap. Use that table instead.'	
+		stat3 <- spec11	
 	} else {
 		stat3 <- 'Statistics not computed (stats = FALSE).'
 	}

@@ -30,7 +30,7 @@ Details. Default is \code{"All"}.}
 each taxon in each sample. Default is \code{FALSE}.}
 
 \item{gear}{The sampling gear type of interest (\code{Drift},
-\code{LightTrap}, \code{FishGut}, etc). Should be specified only in rare
+\code{LightTrap}, \code{Sticky}, or \code{FishGut}). Should be specified only in rare
 cases where you are not working from \code{\link{readDB}} output. See
 Details.}
 }
@@ -62,10 +62,15 @@ Creates a list containing the following dataframes:\cr
 
 Note on units: All count data are presented as raw counts (i.e., just number
 of bugs, and not density, rate, or concentration). All biomass values are in
-\code{mg}, and sizes are in \code{mm}. \code{Distance} is in \code{m},
-\code{Velocity} is in \code{m/s} and \code{Volume} is in \code{m^3}. For Drift data,
-\code{TimeElapsed} is in \code{seconds} and \code{ProcessTime} is in decimal
-\code{hours} (these units may differ for other gear types).
+\code{mg} except for the mass of fish whose guts are being analyzed, which are
+in \code{g}. All sizes are in \code{mm}. \code{Distance} is in \code{m},
+all depths are in \code{ft}, \code{Velocity} is in \code{m/s} and 
+\code{Volume} is in \code{m^3}. 
+\code{TimeElapsed} is in decmial \code{minutes} for Drift, decimal 
+\code{hours} for Light Traps, and decimal \code{days} for Sticky traps.
+\code{ProcessTime} is in decimal
+\code{hours}. \code{RiverMile} is generally in \code{miles} unless otherwise
+specified in the \code{Notes}.
 
 Note on compatibility: If you plan to use \code{\link{sampstats}} or
 \code{\link{ordmat}} on the \code{sampspec} output, then set \code{stats =
@@ -77,9 +82,6 @@ Pulls exported data from the Foodbase database for use in R,
   facilitate analysis.
 }
 \details{
-Currently only \code{Drift} and \code{FishGut} are implemented for
-\code{gear}.
-
 The data are based on data saved locally on your computer from the Foodbase
 database when you run the function \code{\link{readDB}}. To update these
 data, use \code{\link{readDB}} (see Examples).
@@ -98,10 +100,11 @@ Using \code{species} you can return data for only certain taxa of interest.
 In addition to choosing species individually (e.g., \code{species = "CHIL"}
 or \code{species = c("CHIL", "SIML")}), you can also use the shortcut
 \code{species = "Big4"} to subset only for species codes \code{CHIL},
-\code{SIML}, \code{NZMS}, and \code{GAMM}, or the shortcut \code{species =
+\code{SIML}, \code{NZMS}, and \code{GAMM}, the shortcut \code{species =
 "Big9"} to subset only for species codes \code{CHIL}, \code{CHIP},
 \code{CHIA}, \code{SIML}, \code{SIMP}, \code{SIMA}, \code{OLIG}, \code{NZMS},
-and \code{GAMM}.
+and \code{GAMM}, or the shortcut \code{species = "Caddis"} to subset only 
+for caddisfly species codes.
 
 The argument \code{gear} can be specified (e.g., \code{gear = 'Drift'}), and
 in general there is no harm in doing so. However, in most cases \code{gear}

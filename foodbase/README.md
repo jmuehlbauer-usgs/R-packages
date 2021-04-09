@@ -1,7 +1,7 @@
 # :pizza: foodbase
 **Functions for Reading and Working with Foodbase Data**
 
-This packages contains some functions for importing and working with data from the Foodbase database. Currently only implemented for Drift and Fish Guts data.
+This packages contains some functions for importing and working with data from the Foodbase database. 
 
 __Installation instructions:__  
 In `R`, paste the following lines of code:  
