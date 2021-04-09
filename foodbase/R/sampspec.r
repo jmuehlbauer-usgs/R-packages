@@ -171,7 +171,7 @@ for(i in 1:3){
 		if(file.exists(paste0(dbdir, '/', gear3, type1[i], '.csv')) == FALSE){
 		temp0 <- readDB(gear = gear, type = type1[i], updater = TRUE)
 	}
-	type3[[i]] <- read.csv(paste0(dbdir, '/', gear3, type1[i], '.csv'))
+	type3[[i]] <- read.csv(paste0(dbdir, '/', gear3, type1[i], '.csv'), na.strings = '')
 } else {
 	type3[[i]] <- type2[[i]]
 }
@@ -271,19 +271,12 @@ if(gear %in% c('FishGut', 'Sticky')){
 spec2 <- spec1[spec1$BarcodeID %in% samp0$BarcodeID, ]
 
 ## Add 0 count rows in spec for processed samples containing none of the subsetted species
-bar0 <- unique(type4[[2]][!(type4[[2]]$BarcodeID %in% spec2$BarcodeID),'BarcodeID'])
-if(nrow(bar0) > 0){
-	bar1 <- rep(bar0, rep(length(species), length(bar0)))
-	spp1 <- as.factor(rep(species, length(bar0)))
-	coln <- c('BarcodeID', 'SpeciesID', colnames(spec2[, !c('BarcodeID', 'SpeciesID')]))
-	bar2 <- as.data.frame(matrix(nrow = length(bar1), ncol = length(coln)))
-		colnames(bar2) <- coln
-		bar2$BarcodeID <- bar1
-		bar2[, 2] <- spp1
-		bar2[is.na(bar2)] <- 0
-		if(nrow(bar2) > 0){bar2$Notes <- ''}
-	spec3 <- rbind(spec2, bar2)
-	spec3 <- spec3[order(BarcodeID),]
+bar1 <- unique(type4[[2]][!(BarcodeID %in% spec2$BarcodeID), BarcodeID])
+bar2 <- unique(samp0[BarcodeID %in% bar1, BarcodeID])
+if(length(bar2) > 0){
+	bar3 <- rep(bar2, rep(length(species), length(bar2)))
+	bar4 <- data.table(BarcodeID = bar3, SpeciesID = species[1])
+	spec3 <- merge(bar4, spec2, by = c('BarcodeID', 'SpeciesID'), all = TRUE)
 } else {
 	spec3 <- spec2
 }
@@ -319,27 +312,30 @@ spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
 
 
 ##### Reassign CountExtra, compute biomass #####
-### How to deal with unmeasured, count-only Sticky data? Keep Extra count in the tables for that gear?
 
 ## Only applicable to gears other than LightTrap
 if(gear != 'LightTrap'){
 
 ## Factor CountExtra into size classes
 spec4$MeasuredTotal <- spec4$CountTotal - spec4$Extra
-spec7 <- spec6[, .SD, .SDcols = !c('Notes', 'CountTotal')]
-spec8 <- spec4[, sizecols(), with = FALSE]
-spec9 <- spec4[, .SD, .SDcols = !c('CountTotal', 'MeasuredTotal', 'Extra')]
-	spec9[, sizecols()] <- round(spec8 + spec8 * spec4$Extra / spec4$MeasuredTotal)
+spec7 <- spec4[, sizecols(), with = FALSE]
+spec8 <- spec6[, .SD, .SDcols = !c('Notes', 'CountTotal')]
+if(gear != 'Sticky'){
+	spec9 <- spec4[, .SD, .SDcols = !c('CountTotal', 'MeasuredTotal', 'Extra')]
+} else {
+	spec9 <- spec4[, .SD, .SDcols = !c('MeasuredTotal', 'Extra')]
+}
+	spec9[, sizecols()] <- round(spec7 + spec7 * spec4$Extra / spec4$MeasuredTotal)
 spec10 <- merge(combs1, spec9, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
 	for (i in nums[nums < ncol(spec10)]){set(spec10,which(is.na(spec10[[i]])), i, 0)}
 spec11 <- spec10[spec10$SpeciesID != 'NOBU',]
 
 ## Get biomass for each size class, taxon, and site
 reps1 <- c(0.5, 1:20)
-size1 <- matrix(reps1, ncol = length(reps1), nrow = nrow(spec8), byrow = TRUE)
+size1 <- matrix(reps1, ncol = length(reps1), nrow = nrow(spec7), byrow = TRUE)
 AB1 <- sppl1[match(spec4$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
 biom1 <- spec4[, .SD, .SDcols = !c('CountTotal', 'MeasuredTotal', 'Notes', 'Extra')]
-	biom1[, sizecols()] <- round(spec8 * (size1^AB1$RegressionB) * AB1$RegressionA, 2)
+	biom1[, sizecols()] <- round(spec7 * (size1^AB1$RegressionB) * AB1$RegressionA, 2)
 biom2 <- merge(combs1, biom1, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
 	biom2[is.na(biom2)] <- 0
 	biom2$Extra <- NA
@@ -357,7 +353,7 @@ biom6 <- biom5[biom5$SpeciesID != 'NOBU',]
 ## Set Biomass and Raw conditions for LightTrap
 } else {
 	spec11 <- spec6
-	spec7 <- 'Raw specimens are identical to Specimens table for LightTrap. Use that table instead.'
+	spec8 <- 'Raw specimens are identical to Specimens table for LightTrap. Use that table instead.'
 	biom3 <- biom6 <- 'No biomass data are available for LightTrap.'
 }
   
@@ -393,7 +389,7 @@ if(gear != 'LightTrap' & stats == TRUE){
 
 ## Create list
 lout1 <- list('Samples' = samp2, 'Specimens' = spec11, 'Biomass' = biom6, 
-	'RawSpecimens' = spec7, 'RawBiomass' = biom3, 'Taxa' = sppl1, 'Missing' = sampM, 
+	'RawSpecimens' = spec8, 'RawBiomass' = biom3, 'Taxa' = sppl1, 'Missing' = sampM, 
 	'SampDel' = sampD, 'SpecDel' = specD, 'Statistics' = stat3)
 
 ## Convert 'BarcodeID' to 'PITTagID' if FishGut
