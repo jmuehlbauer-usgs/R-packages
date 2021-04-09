@@ -244,9 +244,9 @@ if(length(species) == 1) {
 }
 
 ## Combine same size classes from coarse and fine sieves 
-	## Note: For Drift and FishGut only
+	## Note: Really only for Drift.
     ## Note: For FishGut, the old Aggregate and CountExtra have been added together in the database
-if(gear %in% c('Drift', 'FishGut')){
+if(gear %in% c('Drift', 'FishGut', 'Sticky')){
 	sizecols = function(letter = 'B'){
 		as.character(paste0(letter, c(0:20)))
     }
@@ -258,7 +258,7 @@ if(gear == 'Drift'){
 			spec0[, sizecols('F')[1:16], with = FALSE]
 		spec1$Extra <- spec0$CExtra + spec0$FExtra
 	}
-if(gear == 'FishGut'){
+if(gear %in% c('FishGut', 'Sticky')){
 	ecol1 <- c(which(colnames(spec0) != 'BExtra'), which(colnames(spec0) == 'BExtra'))
     spec1 <- setcolorder(spec0, ecol1)
 	colnames(spec1)[ncol(spec1)] <- 'Extra'
@@ -294,10 +294,9 @@ samp1 <- samp0[sampcut, ]
 sampM <- samp0[!sampcut, ]
 
 ## Cut samples and specimens that were flagged for deletion
-sampdel <- samp1$FlagDelete == 1
-samp2 <- samp1[!sampdel, ]
-samp3 <- samp2[, FlagDelete:=NULL]
-sampD <- samp1[sampdel, ]
+samp2 <- samp1[FlagDelete == 0, ]
+	samp2 <- samp2[, FlagDelete:=NULL]
+sampD <- samp1[FlagDelete == 1, ]
 spec4 <- spec3[spec3$BarcodeID %in% samp2$BarcodeID, ]
 specD <- spec3[spec3$BarcodeID %in% sampD$BarcodeID, ]
 
@@ -309,7 +308,7 @@ sppl1 <- sppl0[sppl0$SpeciesID != 'NOBU' & sppl0$SpeciesID %in% spec4$SpeciesID,
 
 ## Add implicit 0 taxa counts into data, remove NOBUs
 	## Note: NOBU is a code for "NO BUgs". But 0-count smaples are already accounted for.
-barID1 <- unique(samp3$BarcodeID)
+barID1 <- unique(samp2$BarcodeID)
 sppID1 <- unique(spec4$SpeciesID)
 combs1 <- CJ(barID1, sppID1)
 	colnames(combs1) <- c('BarcodeID', 'SpeciesID')
@@ -320,6 +319,7 @@ spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
 
 
 ##### Reassign CountExtra, compute biomass #####
+### How to deal with unmeasured, count-only Sticky data? Keep Extra count in the tables for that gear?
 
 ## Only applicable to gears other than LightTrap
 if(gear != 'LightTrap'){
@@ -392,7 +392,7 @@ if(gear != 'LightTrap' & stats == TRUE){
 ##### Final formatting on tables and list #####
 
 ## Create list
-lout1 <- list('Samples' = samp3, 'Specimens' = spec11, 'Biomass' = biom6, 
+lout1 <- list('Samples' = samp2, 'Specimens' = spec11, 'Biomass' = biom6, 
 	'RawSpecimens' = spec7, 'RawBiomass' = biom3, 'Taxa' = sppl1, 'Missing' = sampM, 
 	'SampDel' = sampD, 'SpecDel' = specD, 'Statistics' = stat3)
 
@@ -410,7 +410,7 @@ if(gear == 'FishGut'){
 	## Note: Might eventually keep as data.tables instead. But don't want to confuse people for now.
 fact1 <- c('BarcodeID', 'PITTagID', 'FishGutID', 'SpeciesID', 
 	'Region', 'Reach', 'Bank', 'Collector', 'Weather', 'WindSpeed', 'Habitat', 'Battery', 
-	'EntererSample', 'Processor', 'Checker', 'EntererSpecimen', 
+	'EntererSample', 'Processor', 'Checker', 'EntererSpecimen', 'Orientation',
 	'Kingdom', 'Phylum', 'Class', 'Order', 'Suborder', 'Superfamily', 'Family', 'Subfamily', 
 	'Genus', 'Species', 'Habitat', 'Stage', 'FFG')
 logi1 <- c('Bats', 'FlagStrange', 'FlagDelete', 'QAQC')
