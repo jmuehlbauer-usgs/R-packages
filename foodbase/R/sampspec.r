@@ -62,8 +62,8 @@
 #' for more information. The default (\code{"origin"}) does no conversion of
 #' specimen data, while specifying \code{mesh = "500"} will convert all specimen
 #' data from samples collected using 250 um mesh nets/sieves and return data on 
-#' the scale of 500 um data, using the mutliplers mentioned above (and vice versa for 
-#' \code{mesh = "250"}). These conversions apply only to \code{Specimens}, 
+#' the scale of 500 um data, using the mutliplers mentioned above (and vice versa
+#' for \code{mesh = "250"}). These conversions apply only to \code{Specimens}, 
 #' \code{Biomass}, and \code{Statistics} (if specified) dataframes in the output,
 #' and only for Drift data. Other dataframes in the output (e.g., 
 #' \code{RawSpecimens}) retain the original, unconverted counts.
@@ -141,7 +141,7 @@
 #' @import data.table
 
 ## Function call
-sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = FALSE, gear = ""){
+sampspec <- function(samp = "", spec = "", sppl = "", species = "All", stats = FALSE, gear = "", mesh = "origin"){
 
 
 ##### Set directories and attributes, do some value checking #####
@@ -308,6 +308,42 @@ samp2 <- samp1[FlagDelete == 0, ]
 sampD <- samp1[FlagDelete == 1, ]
 spec4 <- spec3[spec3$BarcodeID %in% samp2$BarcodeID, ]
 specD <- spec3[spec3$BarcodeID %in% sampD$BarcodeID, ]
+
+## Convert specimens to different mesh size, if selected
+if(gear == 'Drift'){
+	if(mesh == '250'){
+		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
+			return(warning('Counts and Biomass from all samples in this dataset with standard, 
+				500-um, circular nets ("Gear" = 6) have been converted to a comparable 250-um standard.
+				However, there are still samples with different mesh openings (not "Gear" = 4 or 6) within this dataset. 
+				Specimen counts may not be comparable from sample-to-sample.'))
+		}
+		spec5 <- spec4
+	} else {if(mesh == '500'){
+		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
+			return(warning('Counts and Biomass from all samples in this dataset with standard, 
+				250-um, circular nets ("Gear" = 4) have been converted to a comparable 500-um standard.
+				However, there are still samples with different mesh openings (not "Gear" = 4 or 6) within this dataset. 
+				Specimen counts may not be comparable from sample-to-sample.'))
+		}
+		spec5 <- spec4		
+	} else {if(mesh == 'origin'){
+		if(length(unique(samp2$GearID)) > 1){
+			return(warning('There are samples with different mesh openings/collection apparatus ("Gears") within this dataset. 
+				Specimen counts may not be comparable from sample-to-sample.'))
+		}
+		spec5 <- spec4
+	} else {
+		stop(paste0('Invalid "mesh" argument. Please correct.'))
+	}}}
+} else {
+spec5 <- spec4
+}
+### need to add more to lines 321, 329 (do the conversion, create spec5 from spec4).
+### need add "1" to all "spec"s after spec4 after this point (spec4 becomes spec5, spec5 becomes spec6, etc).
+### STOPPED HERE.
+
+
 
 ## Subset species list, reduce to only columns of interest
 sppl1 <- sppl0[sppl0$SpeciesID != 'NOBU' & sppl0$SpeciesID %in% spec4$SpeciesID,
