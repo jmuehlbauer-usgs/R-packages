@@ -309,42 +309,6 @@ sampD <- samp1[FlagDelete == 1, ]
 spec4 <- spec3[spec3$BarcodeID %in% samp2$BarcodeID, ]
 specD <- spec3[spec3$BarcodeID %in% sampD$BarcodeID, ]
 
-## Convert specimens to different mesh size, if selected
-if(gear == 'Drift'){
-	if(mesh == '250'){
-		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
-			return(warning('Counts and Biomass from all samples in this dataset with standard, 
-				500-um, circular nets ("Gear" = 6) have been converted to a comparable 250-um standard.
-				However, there are still samples with different mesh openings (not "Gear" = 4 or 6) within this dataset. 
-				Specimen counts may not be comparable from sample-to-sample.'))
-		}
-		spec5 <- spec4
-	} else {if(mesh == '500'){
-		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
-			return(warning('Counts and Biomass from all samples in this dataset with standard, 
-				250-um, circular nets ("Gear" = 4) have been converted to a comparable 500-um standard.
-				However, there are still samples with different mesh openings (not "Gear" = 4 or 6) within this dataset. 
-				Specimen counts may not be comparable from sample-to-sample.'))
-		}
-		spec5 <- spec4		
-	} else {if(mesh == 'origin'){
-		if(length(unique(samp2$GearID)) > 1){
-			return(warning('There are samples with different mesh openings/collection apparatus ("Gears") within this dataset. 
-				Specimen counts may not be comparable from sample-to-sample.'))
-		}
-		spec5 <- spec4
-	} else {
-		stop(paste0('Invalid "mesh" argument. Please correct.'))
-	}}}
-} else {
-spec5 <- spec4
-}
-### need to add more to lines 321, 329 (do the conversion, create spec5 from spec4).
-### need add "1" to all "spec"s after spec4 after this point (spec4 becomes spec5, spec5 becomes spec6, etc).
-### STOPPED HERE.
-
-
-
 ## Subset species list, reduce to only columns of interest
 sppl1 <- sppl0[sppl0$SpeciesID != 'NOBU' & sppl0$SpeciesID %in% spec4$SpeciesID,
 	c('SpeciesID', 'Kingdom', 'Phylum', 'Class', 'Order', 'Suborder', 
@@ -363,9 +327,9 @@ spec5 <- merge(combs1, spec4, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
 spec6 <- spec5[spec5$SpeciesID != 'NOBU',]
 
 
-##### Reassign CountExtra, compute biomass #####
+##### Reassign CountExtra #####
 
-## Only applicable to gears other than LightTrap
+## Only applicable to gears other than LightTrap (through biomass code)
 if(gear != 'LightTrap'){
 
 ## Factor CountExtra into size classes
@@ -378,9 +342,99 @@ if(gear != 'Sticky'){
 	spec9 <- spec4[, .SD, .SDcols = !c('MeasuredTotal', 'Extra')]
 }
 	spec9[, sizecols()] <- round(spec7 + spec7 * spec4$Extra / spec4$MeasuredTotal)
-spec10 <- merge(combs1, spec9, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
-	for (i in nums[nums < ncol(spec10)]){set(spec10,which(is.na(spec10[[i]])), i, 0)}
-spec11 <- spec10[spec10$SpeciesID != 'NOBU',]
+
+
+###### Convert specimens to different mesh size #####
+
+## Set conditions based on mesh selection, pull out rows to convert
+if(gear == 'Drift'){
+	mesh <- as.character(mesh)
+	if(mesh == '250'){
+		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
+			warning('Counts and Biomass from all samples in this dataset with standard, 
+				500-um, circular nets ("GearID" = 6) have been converted to a comparable 250-um standard.
+				However, there are still samples with different mesh openings (not "GearID" = 4 or 6) within this dataset. 
+				Specimen counts may not be comparable from sample-to-sample.')
+		}
+		mesh1 <- samp2[match(spec9$BarcodeID, samp2$BarcodeID), 'GearID']
+		pull1 <- 6
+		dmul1 <- driftMult$Mesh[, -3]
+		spec9a <- spec9[mesh1$GearID == pull1,]
+	} else {if(mesh == '500'){
+		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
+			warning('Counts and Biomass from all samples in this dataset with standard, 
+				250-um, circular nets ("GearID" = 4) have been converted to a comparable 500-um standard.
+				However, there are still samples with different mesh openings (not "GearID" = 4 or 6) within this dataset. 
+				Specimen counts may not be comparable from sample-to-sample.')
+		}
+		mesh1 <- samp2[match(spec9$BarcodeID, samp2$BarcodeID), 'GearID']
+		pull1 <- 4
+		dmul1 <- driftMult$Mesh[, -2]
+		spec9a <- spec9[mesh1$GearID == pull1,]
+	} else {if(mesh == 'origin' | mesh == '' | is.na(mesh)){
+		if(length(unique(samp2$GearID)) > 1){
+			warning('There are samples with different mesh openings/collection apparatus ("GearIDs") within this dataset. 
+				Specimen counts may not be comparable from sample-to-sample.')
+		}
+		spec10 <- spec9
+	} else {
+		stop(paste0('Invalid "mesh" argument. Please correct.'))
+	}}}
+} else {
+spec10 <- spec9
+}
+
+## Convert SpeciesIDs to the conversion factor SpeciesID
+if(exists('spec9a')){if(dim(spec9a)[1] > 0){
+	spec9b <- spec9a[, -'BarcodeID']
+	spec9b$SpeciesID <- ifelse(spec9a$SpeciesID %in% 
+		driftMult$Mesh$SpeciesID, spec9a$SpeciesID, 'NoNZMS')
+
+## Factor in multipliers, multiply matrices
+	dmul2 <- dmul1[match(spec9b$SpeciesID, dmul1$SpeciesID), 2]
+	dmul3 <- driftMult$Bins[match(spec9b$SpeciesID, driftMult$Bins$SpeciesID),]
+	spec9c <- spec9b[, -c('SpeciesID', 'Notes')]
+	spec9d <- dmul2 * rowSums(spec9c) * dmul3[, -1]
+	v9c <- unlist(spec9c)
+	if(pull1 == 4){
+		spec9e <- round(as.matrix(spec9c) - spec9d)
+		spec9e[is.na(spec9e) | spec9e < 0] <- 0
+		v9e <- unlist(spec9e)
+		less1 <- which(v9e > v9c)
+		v9e[less1] <- v9c[less1]
+		spec9f <- as.data.frame(matrix(v9e, nrow = nrow(spec9c), 
+			ncol = ncol(spec9c)))
+			colnames(spec9f) <- colnames(spec9c)
+	}
+	if(pull1 == 6){
+		spec9e <- round(as.matrix(spec9c) + spec9d)
+		spec9e[is.na(spec9e) | spec9e < 0] <- 0
+		v9e <- unlist(spec9e)
+		more1 <- which(v9e < v9c)
+		v9e[more1] <- v9c[more1]
+		spec9f <- as.data.frame(matrix(v9e, nrow = nrow(spec9c), 
+			ncol = ncol(spec9c)))
+			colnames(spec9f) <- colnames(spec9c)
+	}
+
+## Add factor and character columns back in, and unconverted rows
+	spec9g <- cbind(spec9a[, c('BarcodeID', 'SpeciesID')], spec9f, 
+		spec9a[, 'Notes'])
+	spec9f <- rbind(spec9[mesh1$GearID != pull1,], spec9g)
+	spec10 <- spec9f[order(BarcodeID, SpeciesID),]
+} else {
+	spec10 <- spec9
+}} else {
+	spec10 < spec9
+}
+
+## Add 0 row data back in
+spec11 <- merge(combs1, spec10, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
+	for (i in nums[nums < ncol(spec11)]){set(spec11,which(is.na(spec11[[i]])), i, 0)}
+spec12 <- spec11[spec11$SpeciesID != 'NOBU',]
+
+
+##### Compute biomass #####
 
 ## Get biomass for each size class, taxon, and site
 reps1 <- c(0.5, 1:20)
@@ -394,9 +448,9 @@ biom2 <- merge(combs1, biom1, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
 biom3 <- biom2[biom2$SpeciesID != 'NOBU',]
 
 ## Get biomass again, this time accounting for CountExtra
-AB2 <- sppl1[match(spec9$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
-biom4 <- spec9
-	biom4[, sizecols()] <- round(spec9[, sizecols(), with = FALSE] * 
+AB2 <- sppl1[match(spec12$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
+biom4 <- spec12
+	biom4[, sizecols()] <- round(spec12[, sizecols(), with = FALSE] * 
 		(size1^AB1$RegressionB) * AB1$RegressionA, 2)
 biom5 <- merge(combs1, biom4, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
 	for (i in nums[nums < ncol(biom5)]){set(biom5,which(is.na(biom5[[i]])), i, 0)}
@@ -404,7 +458,7 @@ biom6 <- biom5[biom5$SpeciesID != 'NOBU',]
 
 ## Set Biomass and Raw conditions for LightTrap
 } else {
-	spec11 <- spec6
+	spec12 <- spec6
 	spec8 <- 'Raw specimens are identical to Specimens table for LightTrap. Use that table instead.'
 	biom3 <- biom6 <- 'No biomass data are available for LightTrap.'
 }
@@ -430,7 +484,7 @@ if(gear != 'LightTrap' & stats == TRUE){
 ## Set Statistics conditions for LightTrap or non-computed condition
 } else {
 	if(gear == 'LightTrap' & stats == TRUE){
-		stat3 <- spec11	
+		stat3 <- spec12	
 	} else {
 		stat3 <- 'Statistics not computed (stats = FALSE).'
 	}
@@ -440,7 +494,7 @@ if(gear != 'LightTrap' & stats == TRUE){
 ##### Final formatting on tables and list #####
 
 ## Create list
-lout1 <- list('Samples' = samp2, 'Specimens' = spec11, 'Biomass' = biom6, 
+lout1 <- list('Samples' = samp2, 'Specimens' = spec12, 'Biomass' = biom6, 
 	'RawSpecimens' = spec8, 'RawBiomass' = biom3, 'Taxa' = sppl1, 'Missing' = sampM, 
 	'SampDel' = sampD, 'SpecDel' = specD, 'Statistics' = stat3)
 
@@ -485,4 +539,3 @@ lout2 <- lapply(lout1, function(x){
 attr(lout2, 'gear') <- gear
 return(lout2)
 }
-
