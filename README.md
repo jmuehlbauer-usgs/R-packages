@@ -11,7 +11,7 @@ __GCgage__: Functions for downloading data from Grand Canyon area gages.
 __packload__: Function for more easily installing, updating, and loading packages.   
 __trueAIC__: Function for comparing AICs from log-transformed response models vs. similar linear versions.   
 
-The `packload` and `trueAIC` functions are currently only available as sourceable functions (not embedded in a package). `packload` checks if a package is currently installed on a machine. If not, it installs it (via CRAN or else jmuehlbauer-usgs/R-packages). It also has an updater function to update the packages if requested. Then it loads all packages fed to the function too. Sourceable functions can be accessed in R using the following code (replace FUNCTIONNAME with the name of the function of interest):
+The `trueAIC` function is currently only available as a sourceable function (not embedded in a package). The `packload` function is sourceable too but is also embedded within the `foodbase` package. Sourceable functions can be accessed in R using the following code (replace FUNCTIONNAME with the name of the function of interest):
 `source('https://github.com/jmuehlbauer-usgs/R-packages/blob/master/FUNCTIONNAME.r?raw=TRUE')`
 
 There is also a `TEST` package and some How-To code that explains how building and installing these packages from GitHub works.  
