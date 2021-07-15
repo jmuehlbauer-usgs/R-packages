@@ -35,8 +35,8 @@ best to prevent R's printing of package loading commentary, but some text may
 still get through.
 }
 \examples{
-# Load Jeff's \code{bugR} package and the CRAN package \code{lubridate}.
-packload(c('bugR', 'lubridate'))
+# Load Jeff's "bugR" package and the CRAN package "lubridate".
+packload(c("bugR", "lubridate"))
 }
 \author{
 Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}

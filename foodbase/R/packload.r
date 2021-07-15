@@ -36,8 +36,8 @@
 #' @concept packages
 
 #' @examples
-#' # Load Jeff's \code{bugR} package and the CRAN package \code{lubridate}.
-#' packload(c('bugR', 'lubridate'))
+#' # Load Jeff's "bugR" package and the CRAN package "lubridate".
+#' packload(c("bugR", "lubridate"))
 
 #' @author Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
 

@@ -353,10 +353,7 @@ if(gear == 'Drift'){
 	mesh <- as.character(mesh)
 	if(mesh == '250'){
 		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
-			warning('Counts and Biomass from all samples in this dataset with standard, 
-				500-um, circular nets ("GearID" = 6) have been converted to a comparable 250-um standard.
-				However, there are still samples with different mesh openings (not "GearID" = 4 or 6) within this dataset. 
-				Specimen counts may not be comparable from sample-to-sample.')
+			warning('Counts and Biomass from all samples in this dataset with standard, 500-um, circular nets ("GearID" = 6) have been converted to a comparable 250-um standard. \n  However, there are still samples with different mesh openings (not "GearID" = 4 or 6) within this dataset. \n  Specimen counts may not be comparable from sample-to-sample.')
 		}
 		mesh1 <- samp2[match(spec9$BarcodeID, samp2$BarcodeID), 'GearID']
 		pull1 <- 6
@@ -364,10 +361,7 @@ if(gear == 'Drift'){
 		spec9a <- spec9[mesh1$GearID == pull1,]
 	} else {if(mesh == '500'){
 		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
-			warning('Counts and Biomass from all samples in this dataset with standard, 
-				250-um, circular nets ("GearID" = 4) have been converted to a comparable 500-um standard.
-				However, there are still samples with different mesh openings (not "GearID" = 4 or 6) within this dataset. 
-				Specimen counts may not be comparable from sample-to-sample.')
+			warning('Counts and Biomass from all samples in this dataset with standard, 250-um, circular nets ("GearID" = 4) have been converted to a comparable 500-um standard. \n\tHowever, there are still samples with different mesh openings (not "GearID" = 4 or 6) within this dataset. \n  Specimen counts may not be comparable from sample-to-sample.')
 		}
 		mesh1 <- samp2[match(spec9$BarcodeID, samp2$BarcodeID), 'GearID']
 		pull1 <- 4
@@ -375,8 +369,7 @@ if(gear == 'Drift'){
 		spec9a <- spec9[mesh1$GearID == pull1,]
 	} else {if(mesh == 'origin' | mesh == '' | is.na(mesh)){
 		if(length(unique(samp2$GearID)) > 1){
-			warning('There are samples with different mesh openings/collection apparatus ("GearIDs") within this dataset. 
-				Specimen counts may not be comparable from sample-to-sample.')
+			warning('There are samples with different mesh openings/collection apparatus ("GearIDs") within this dataset. \n  Specimen counts may not be comparable from sample-to-sample.')
 		}
 		spec10 <- spec9
 	} else {
