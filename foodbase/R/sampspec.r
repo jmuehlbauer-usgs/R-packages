@@ -63,7 +63,9 @@
 #' specimen data, while specifying \code{mesh = "500"} will convert all specimen
 #' data from samples collected using 250 um mesh nets/sieves and return data on 
 #' the scale of 500 um data, using the mutliplers mentioned above (and vice versa
-#' for \code{mesh = "250"}). These conversions apply only to \code{Specimens}, 
+#' for \code{mesh = "250"}). Generally, converting from the finer 250-um to the 
+#' coarser 500-um mesh is the preferred direction for accuracy, due to 
+#' zero-boundedness in the data. These conversions apply only to \code{Specimens}, 
 #' \code{Biomass}, and \code{Statistics} (if specified) dataframes in the output,
 #' and only for Drift data. Other dataframes in the output (e.g., 
 #' \code{RawSpecimens}) retain the original, unconverted counts.

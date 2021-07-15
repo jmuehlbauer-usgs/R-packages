@@ -10,7 +10,8 @@ sampspec(
   sppl = "",
   species = "All",
   stats = FALSE,
-  gear = ""
+  gear = "",
+  mesh = "origin"
 )
 }
 \arguments{
@@ -30,9 +31,13 @@ Details. Default is \code{"All"}.}
 each taxon in each sample. Default is \code{FALSE}.}
 
 \item{gear}{The sampling gear type of interest (\code{Drift},
-\code{LightTrap}, \code{Sticky}, or \code{FishGut}). Should be specified only in rare
-cases where you are not working from \code{\link{readDB}} output. See
-Details.}
+\code{LightTrap}, \code{Sticky}, or \code{FishGut}). Should be specified
+only in rare cases where you are not working from \code{\link{readDB}}
+output. See Details.}
+
+\item{mesh}{The desired mesh size to be used for analysis of drift data
+(\code{"origin"}, \code{"500"}, or \code{"250"}). See Details.
+Default is \code{"origin"}.}
 }
 \value{
 Creates a list containing the following dataframes:\cr
@@ -112,6 +117,21 @@ will inherit the sample type from the attributes of the \code{\link{readDB}}
 output, so specifying it here is unnecessary. The exception is in rare cases
 where \code{\link{readDB}} is not run before running \code{sampspec}, as in
 the case of the \code{whyme} example below.
+
+The argument \code{mesh} only applies to Drift data (\code{gear = 'Drift'}).
+It allows apples-to-apples comparison of samples collected using 250 and 500
+um mesh nets, based on a series of bin-specific conversion multipliers.
+These multipliers are stored as a list of dataframes; see \code{\link{driftMult}}
+for more information. The default (\code{"origin"}) does no conversion of
+specimen data, while specifying \code{mesh = "500"} will convert all specimen
+data from samples collected using 250 um mesh nets/sieves and return data on 
+the scale of 500 um data, using the mutliplers mentioned above (and vice versa
+for \code{mesh = "250"}). Generally, converting from the finer 250-um to the 
+coarser 500-um mesh is the preferred direction for accuracy, due to 
+zero-boundedness in the data. These conversions apply only to \code{Specimens}, 
+\code{Biomass}, and \code{Statistics} (if specified) dataframes in the output,
+and only for Drift data. Other dataframes in the output (e.g., 
+\code{RawSpecimens}) retain the original, unconverted counts.
 }
 \examples{
 # Read in drift sample data from the network, and update sample, specimen, and species list data.
