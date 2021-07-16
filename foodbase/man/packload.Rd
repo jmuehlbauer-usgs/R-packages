@@ -28,7 +28,7 @@ them if selected, and then loads them.
 }
 \details{
 The function checks for packages located on CRAN and on Jeff Muehlbauer's
-GitHub space (\link{https://github.com/jmuehlbauer-usgs/R-packages}). 
+\href{https://github.com/jmuehlbauer-usgs/R-packages}{GitHub profile}. 
 In general specifying \code{updater = TRUE} is unnecessary unless you know a big 
 an R package has recently been developed. The \code{quiet} argument tries its
 best to prevent R's printing of package loading commentary, but some text may 
