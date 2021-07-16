@@ -344,6 +344,7 @@ if(gear != 'Sticky'){
 	spec9 <- spec4[, .SD, .SDcols = !c('MeasuredTotal', 'Extra')]
 }
 	spec9[, sizecols()] <- round(spec7 + spec7 * spec4$Extra / spec4$MeasuredTotal)
+	spec9[is.na(spec9)] <- 0
 
 
 ###### Convert specimens to different mesh size #####
@@ -444,8 +445,8 @@ biom3 <- biom2[biom2$SpeciesID != 'NOBU',]
 
 ## Get biomass again, this time accounting for CountExtra
 AB2 <- sppl1[match(spec12$SpeciesID, sppl1$SpeciesID), c('RegressionA', 'RegressionB')]
-biom4 <- spec12
-	biom4[, sizecols()] <- round(spec12[, sizecols(), with = FALSE] * 
+biom4 <- spec10
+	biom4[, sizecols()] <- round(spec10[, sizecols(), with = FALSE] * 
 		(size1^AB1$RegressionB) * AB1$RegressionA, 2)
 biom5 <- merge(combs1, biom4, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
 	for (i in nums[nums < ncol(biom5)]){set(biom5,which(is.na(biom5[[i]])), i, 0)}
@@ -463,14 +464,15 @@ biom6 <- biom5[biom5$SpeciesID != 'NOBU',]
 
 ## Set conditions for LightTrap or non-computed condition
 if(gear != 'LightTrap' & stats == TRUE){
-	spec12 <- spec4[, sizecols(), with = FALSE]
-	size2 <- apply(spec12, 1, function(x) rep(reps1, x))
-	stat1 <- spec4[, c('BarcodeID', 'SpeciesID', 'CountTotal')]
+	spec13 <- spec10[, sizecols(), with = FALSE]
+	size2 <- apply(spec13, 1, function(x) rep(reps1, x))
+	stat1 <- spec10[, c('BarcodeID', 'SpeciesID')]
+		stat1$CountTotal <- rowSums(spec13)
 		stat1$SizeMean <- round(sapply(size2, mean), 2)
 		stat1$SizeMedian <- round(sapply(size2, median), 2)
 		stat1$SizeSD <- round(sapply(size2, sd), 2)
 		stat1$BiomassTotal <- rowSums(biom4[, sizecols(), with = FALSE])
-		stat1$Notes <- spec4$Notes
+		stat1$Notes <- spec10$Notes
 	stat2 <- merge(combs1, stat1, by = c('BarcodeID', 'SpeciesID'), all.x = TRUE)
 		stat2$CountTotal[is.na(stat2$CountTotal)] <- 0
 		stat2$BiomassTotal <- ifelse(stat2$CountTotal == 0, 0, stat2$BiomassTotal)
