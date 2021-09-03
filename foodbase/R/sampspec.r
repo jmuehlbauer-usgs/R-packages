@@ -293,7 +293,7 @@ bar1 <- unique(type4[[2]][!(BarcodeID %in% spec2$BarcodeID), BarcodeID])
 bar2 <- unique(samp0[BarcodeID %in% bar1, BarcodeID])
 if(length(bar2) > 0){
 	bar3 <- rep(bar2, rep(length(species), length(bar2)))
-	bar4 <- data.table(BarcodeID = bar3, SpeciesID = species[1])
+	bar4 <- data.table(BarcodeID = bar3, SpeciesID = species)
 	spec3 <- merge(bar4, spec2, by = c('BarcodeID', 'SpeciesID'), all = TRUE)
 } else {
 	spec3 <- spec2
@@ -345,6 +345,7 @@ if(gear != 'Sticky'){
 }
 	spec9[, sizecols()] <- round(spec7 + spec7 * spec4$Extra / spec4$MeasuredTotal)
 	spec9[is.na(spec9)] <- 0
+	spec9$Notes[spec9$Notes == 0] <- NA
 
 
 ###### Convert specimens to different mesh size #####
