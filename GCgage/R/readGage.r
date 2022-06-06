@@ -17,9 +17,9 @@
 #' This function enables downloading of gage data from the US Geological Survey Grand Canyon Montoring 
 #' and Research Center website (\url{https://www.gcmrc.gov/discharge_qw_sediment/stations/GCDAMP}). 
 #'
-#' Gage names and parameters available for download can be found using a call to \code{gages()} and 
-#' \code{gageVars()}, respectively. Gages can be specified using either the gage \code{Name} or 
-#' \code{Number}.
+#' Gage names (argument \code{gage}) and parameters (argument \code{vars}) available for download can be found 
+#' using a call to \code{gages()} and \code{gageVars()}, respectively. Gages can be specified using either the 
+#' gage \code{Name} or \code{Number}.
 #'
 #' The \code{startDate} and \code{endDate} specified indicate the first and last day of gage data to be 
 #' dowloaded, includive of those dates. The start date for each gage can be found using a call to 
