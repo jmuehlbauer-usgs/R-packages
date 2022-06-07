@@ -209,16 +209,16 @@ readGage <- function(gage = "09380000", vars = "all", startDate = "first", endDa
 	}
 	
 	# Error check for gage name format
-	vgage1 <- gage[!gage %in% unlist(gages()[, c('Name', 'Number')])]
+	vgage1 <- gage[!gage %in% c(gages()[, 'Name'], as.character(gages()[, 'Number']))]
 	if(length(vgage1) > 0){
 		vgage2 <- paste0(vgage1, collapse = "', '")
 		stop(paste0("Gage(s) '", vgage2, "' are not accessible via this function. 
-		Check for typos and use a call to 'gage()' to see available gages. 
+		Check for typos and use a call to 'gages()' to see available gages. 
 		Gages can be called using either their gage name or number, in quotes."))
 	}
 	# Error check for gage parameter name format
 	vvars1 <- vars[!vars %in% gageVars()$Parameter]
-	if(length(vvars1) > 0 & vars != "all"){
+	if(length(vvars1) > 0 && vars != "all"){
 		vvars2 <- paste0(vvars1, collapse = "', '")
 		stop(paste0("Gage variable(s) '", vvars2, "' are not allowable parameters.
 		Check for typos and use a call to 'gageVars()' to see available parameters."))
@@ -233,8 +233,8 @@ readGage <- function(gage = "09380000", vars = "all", startDate = "first", endDa
 	badchar <- sapply(datelist, function(x){
 		!x %in% c('first', 'today')
 	})
-	if((badclass[1] == TRUE & badchar[1] == TRUE) |
-		(badclass[2] == TRUE & badchar[2] == TRUE)){
+	if((badclass[1] == TRUE && badchar[1] == TRUE) ||
+		(badclass[2] == TRUE && badchar[2] == TRUE)){
 		stop("The start &/or end date format is incorrect.
 		It needs to be either a date (in YYYY-MM-DD, Date, or POSIX format), or 'first', or 'today' (in quotes).")		
 	}
@@ -280,7 +280,7 @@ readGage <- function(gage = "09380000", vars = "all", startDate = "first", endDa
 		if(writeCSV == TRUE){
 			vfile1 <- "GageData_"
 		} else{
-			if(grepl("/", writeCSV, fixed = TRUE) & 
+			if(grepl("/", writeCSV, fixed = TRUE) && 
 				dir.exists(substr(writeCSV, 1, regexpr("/", writeCSV)[1])) == FALSE){
 				dir.create(substr(writeCSV, 1, regexpr("/", writeCSV)[1]), showWarnings = FALSE)
 			}
