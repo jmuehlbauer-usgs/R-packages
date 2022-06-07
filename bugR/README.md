@@ -1,4 +1,4 @@
-# bugR
+# :bug: bugR
 **Functions for Common Ecological Analyses of Invertebrate Data**
 
 This package contains functions for preparing, creating, and post-processing ordinations. It relies heavily on the package [vegan](https://CRAN.R-project.org/package=vegan).

@@ -1,4 +1,4 @@
-# R-packages
+# :gift: R-packages
 **Custom packages and functions for R**
 
 These packages are created principally for use by my research group and colleagues, specifically at the [USGS Grand Canyon Monitoring and Research Center](https://www.usgs.gov/centers/sbsc/about/gcmrc), to facilitate common `R` tasks that we carry out with some regularity.  
