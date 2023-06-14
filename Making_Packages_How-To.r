@@ -81,7 +81,7 @@ git branch foodbase_working
 
 ## Change branches
 git checkout foodbase_working
-git checkout master
+git checkout main
 
 ## Push to a branch
 git push origin foodbase_working
@@ -90,15 +90,19 @@ git push origin foodbase_working
 git branch -d foodbase_working
 
 ## Merge branches
-git checkout master
+git checkout main
 git merge foodbase_working
 
 ## Push to a GitHub repository
 git remote add origin https://github.com/jmuehlbauer-usgs/R-packages.git
-git pull origin master
+git pull origin main
 git commit -m "Merging with GitHub"
-git push origin master
+git push origin main
 
+## Overwrite local contents with contents of remote repo
+git fetch --all
+git branch backup-main
+git reset --hard origin/main
 
 ##### Download and install the package from GitHUB #####
 
