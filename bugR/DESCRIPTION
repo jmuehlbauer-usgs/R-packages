@@ -11,4 +11,4 @@ Depends:
 License: GPL-3
 LazyData: true
 URL: https://github.com/jmuehlbauer-usgs/R-packages
-RoxygenNote: 5.0.1
+RoxygenNote: 7.3.1

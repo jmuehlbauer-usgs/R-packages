@@ -4,11 +4,21 @@
 \alias{NMS}
 \title{Non-metric multidimensional scaling ordination.}
 \usage{
-NMS(Data, maxruns = 1000, step.maxruns = 100, file.append = "",
-  stepdown = TRUE, only23 = FALSE, cores = detectCores() - 1)
+NMS(
+  Data,
+  distance = "bray",
+  maxruns = 1000,
+  step.maxruns = 100,
+  file.append = "",
+  stepdown = TRUE,
+  only23 = FALSE,
+  cores = detectCores() - 1
+)
 }
 \arguments{
 \item{Data}{A matrix containing only numeric data.}
+
+\item{distance}{The dissimilarity index used by \code{vegan}'s \code{metaMDS} function using \code{\link{vegdist}}. Default is \code{bray} for Bray-Curtis dissimilarity.}
 
 \item{maxruns}{The maximum number of random starts allowed to find a convergent ordination solution.  Default is \code{1000}.}
 
@@ -48,13 +58,10 @@ NMS(ordmat)
 pts2D <- read.csv("NMS Output/NMSPoints2D.csv", row.names = 1, header = TRUE)
 plot(pts2D)
 }
-\author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
-}
 \seealso{
 \code{\link{metaMDS}} in package \code{vegan}, on which this function depends. Pre-processing of the dataframe in preparation for running \code{NMS} may be accomplished using \code{\link{cv}}, \code{\link{delRare}}, and \code{\link{rel}}. Ueful post-processing tools include \code{\link{axisR2}}, and \code{\link{ordRotate}}, plus \code{\link{envfit}} in package \code{vegan}.
 }
-\concept{
-NMS, MDS, NMDS, stress, ordination
+\author{
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}
 }
-
+\concept{NMS, MDS, NMDS, stress, ordination}

@@ -3,6 +3,7 @@
 #' @description Run non-metric multidimensional scaling (NMS) ordinations, in several possible dimensions.
 
 #' @param Data A matrix containing only numeric data.
+#' @param distance The dissimilarity index used by \code{vegan}'s \code{metaMDS} function using \code{\link{vegdist}}. Default is \code{bray} for Bray-Curtis dissimilarity.
 #' @param maxruns The maximum number of random starts allowed to find a convergent ordination solution.  Default is \code{1000}.
 #' @param only23 Should only 2D and 3D ordinations be run (\code{TRUE}), or should R ask if any other dimensions should be tried (\code{FALSE})?  Default is \code{FALSE}.  
 #' @param stepdown Should a stepdown series of ordinations, from \code{6} to \code{1} axes, be run and plotted? Default is \code{TRUE}.
@@ -41,100 +42,99 @@
 #' @export
 
 ## Function call
-NMS<-function(Data,maxruns=1000,step.maxruns=100,file.append='',stepdown=TRUE,only23=FALSE,cores=detectCores()-1)
+NMS <- function(Data, distance = "bray", maxruns = 1000, step.maxruns = 100, file.append = "",
+	stepdown = TRUE, only23 = FALSE, cores = detectCores() - 1)
 {
 ## Create the output folder
-dir.create('NMS Output',showWarnings=FALSE)
+dir.create("NMS Output", showWarnings = FALSE)
 
 ## Save datasheet so it can be run in parallel
-write.csv(Data,paste('NMS Output/R_DataForNMS',file.append,'.csv',sep=''))
-library(parallel,quietly=TRUE)
+write.csv(Data, paste("NMS Output/R_DataForNMS", file.append, '.csv', sep = ""))
+library(parallel, quietly = TRUE)
 
-most<-{
-if(stepdown==TRUE){
+most <- {
+if(stepdown == TRUE){
 ## Start with stepdown from 6 axes for preliminary analysis
-run.NMS.stress<-function(X){
-	suppressWarnings(library(vegan,quietly=TRUE))
-	Data<-read.csv(paste('NMS Output/R_DataForNMS',file.append,'.csv',sep=''),header=T,row.names=1)
-	vegan::metaMDS(Data,k=X,trymax=step.maxruns)
+run.NMS.stress <- function(X){
+	suppressWarnings(library(vegan, quietly = TRUE))
+	Data <- read.csv(paste("NMS Output/R_DataForNMS", file.append, ".csv", sep = ""), header = TRUE, row.names = 1)
+	vegan::metaMDS(Data, distance = distance, k = X, trymax = step.maxruns)
 	}
-cl.stress<-makeCluster(getOption("cl.cores",cores))
-	MDS.stress<-parLapply(cl.stress,c(1:6),run.NMS.stress)
+cl.stress <- makeCluster(getOption("cl.cores", cores))
+	MDS.stress <- parLapply(cl.stress, c(1:6), run.NMS.stress)
 		stopCluster(cl.stress)
 
 ## Combine stress values from step down, make scree plot figure
-step.stress<-sapply(c(1:6),function(x) MDS.stress[[x]]$stress)
-	png(paste('NMS Output/ScreePlot',file.append,'.png',sep=''))
-		plot(c(1:6),step.stress,xlab='# Axes',ylab='Stress')
-		lines(c(1:6),step.stress)
+step.stress <- sapply(c(1:6), function(x) MDS.stress[[x]]$stress)
+	png(paste("NMS Output/ScreePlot", file.append, ".png", sep = ""))
+		plot(c(1:6), step.stress, xlab = "# Axes", ylab = "Stress")
+		lines(c(1:6), step.stress)
 		dev.off()
 		
 ## Open the scree plot in the plotting window	
-plot(c(1:6),step.stress,xlab='# Axes',ylab='Stress')
-	lines(c(1:6),step.stress)
+plot(c(1:6), step.stress, xlab = "# Axes", ylab = "Stress")
+	lines(c(1:6), step.stress)
 }
 	
 ## Save 2D and 3D data, work from those rather than re-running MDS every time
-run.NMS<-function(X){
-	suppressWarnings(library(vegan,quietly=TRUE))
-	Data<-read.csv(paste('NMS Output/R_DataForNMS',file.append,'.csv',sep=''),header=T,row.names=1)
-	vegan::metaMDS(Data,k=X,trymax=maxruns,trace=0)
+run.NMS <- function(X){
+	suppressWarnings(library(vegan, quietly = TRUE))
+	Data <- read.csv(paste("NMS Output/R_DataForNMS", file.append, ".csv", sep = ""), header = TRUE, row.names = 1)
+	vegan::metaMDS(Data, distance = distance, k = X, trymax = maxruns, trace = 0)
 	}
-cl<-makeCluster(getOption("cl.cores",cores))
-	MDS<-parLapply(cl,c(2:3),run.NMS)
+cl <- makeCluster(getOption("cl.cores", cores))
+	MDS <- parLapply(cl, c(2:3), run.NMS)
 		stopCluster(cl)
 
 for(i in 1:length(MDS)){
-MDS.points <-MDS[[i]]$points	
-	MDS.points[,1]<-MDS.points[,1] *(-1)
-		write.csv(MDS.points,paste('NMS Output/NMSPoints',MDS[[i]]$ndim,'D',file.append,'.csv',sep=''),row.names=T)
-MDS.species<-MDS[[i]]$species
-	MDS.species[,1]<-MDS.species[,1] *(-1)
-		write.csv(MDS.species,paste('NMS Output/NMSSpecies',MDS[[i]]$ndim,'D',file.append,'.csv',sep=''),row.names=T)
+MDS.points <- MDS[[i]]$points	
+	MDS.points[, 1] <- MDS.points[, 1] * (-1)
+		write.csv(MDS.points, paste("NMS Output/NMSPoints", MDS[[i]]$ndim, "D", file.append, ".csv", sep = ""), row.names = TRUE)
+MDS.species <- MDS[[i]]$species
+	MDS.species[, 1] <- MDS.species[, 1] * (-1)
+		write.csv(MDS.species,paste("NMS Output/NMSSpecies", MDS[[i]]$ndim, "D", file.append, ".csv", sep = ""), row.names = TRUE)
 	}
 
 ## Save the 2D and 3D stress values to a datasheet
-	thestress<-cbind(c(2:3),c(MDS[[1]]$stress,MDS[[2]]$stress))
-		colnames(thestress)<-c('Number of Axes','Stress')
-		write.csv(thestress,paste('NMS Output/Stress',file.append,'.csv',sep=''),row.names=FALSE)
-		
+	thestress <- cbind(c(2:3), c(MDS[[1]]$stress, MDS[[2]]$stress))
+		colnames(thestress) <- c("Number of Axes", "Stress")
+		write.csv(thestress,paste("NMS Output/Stress", file.append, ".csv", sep = ""), row.names = FALSE)
 
-		
 ## Run ordinations in additional dimensions upon request
-print(cat("\n","2D and 3D solutions have been saved in the 'NMS Output' folder,",
-	"\n","along with a csv of the input matrix, stress data, and the scree plot.			"))
+print(cat("\n", "2D and 3D solutions have been saved in the 'NMS Output' folder,",
+	"\n", "along with a csv of the input matrix, stress data, and the scree plot.			"))
 }
 
-if(only23==FALSE){
+if(only23 == FALSE){
 most
-print(cat("\n","Based on the scree plot (either the saved one or the one that has popped up)...							"))
+print(cat("\n", "Based on the scree plot (either the saved one or the one that has popped up)...							"))
 repeat{
-print(cat("\n","Would you like to run the ordination in any additional dimensions?",
-	"\n","Enter the desired dimensions separated by commas, or type '0' (no quotes) for 'No.'		"))
+print(cat("\n", "Would you like to run the ordination in any additional dimensions?",
+	"\n", "Enter the desired dimensions separated by commas, or type '0' (no quotes) for 'No.'		"))
 	
-d<-scan(nlines=1,sep=',')
-if(d[1]==0){break}
+d <- scan(nlines = 1, sep = ",")
+if(d[1] == 0){break}
 else{
-	if(length(d)>1){
-		cl.more<-makeCluster(getOption("cl.cores",cores))
-		MDS.more<-parLapply(cl.more,c(d),run.NMS)
+	if(length(d) > 1){
+		cl.more <- makeCluster(getOption("cl.cores", cores))
+		MDS.more <- parLapply(cl.more, c(d), run.NMS)
 		stopCluster(cl)} 
-	else{MDS.more<-lapply(d,run.NMS)}
+	else{MDS.more <- lapply(d, run.NMS)}
 for(i in 1:length(MDS.more)){
-MDS.more.points <-MDS.more[[i]]$points	
-	MDS.more.points[,1]<-MDS.more.points[,1] *(-1)
-		write.csv(MDS.more.points,paste('NMS Output/NMSPoints',MDS.more[[i]]$ndim,'D',file.append,'.csv',sep=''),row.names=T)
-MDS.more.species<-MDS.more[[i]]$species
-	MDS.more.species[,1]<-MDS.more.species[,1] *(-1)
-		write.csv(MDS.more.species,paste('NMS Output/NMSSpecies',MDS.more[[i]]$ndim,'D',file.append,'.csv',sep=''),row.names=T)
+MDS.more.points <- MDS.more[[i]]$points	
+	MDS.more.points[, 1] <- MDS.more.points[, 1] * (-1)
+		write.csv(MDS.more.points, paste("NMS Output/NMSPoints", MDS.more[[i]]$ndim, "D", file.append, ".csv", sep = ""), row.names = TRUE)
+MDS.more.species <- MDS.more[[i]]$species
+	MDS.more.species[, 1] <- MDS.more.species[, 1] * (-1)
+		write.csv(MDS.more.species, paste("NMS Output/NMSSpecies", MDS.more[[i]]$ndim, "D", file.append, ".csv", sep = ""), row.names = TRUE)
 		}
 	}
 }
 	
-print(cat("\n","OK, All done!											"))	
+print(cat("\n", "OK, All done!											"))	
 }
 else{
 most
-print(cat("\n","All done!											"))	
+print(cat("\n", "All done!											"))	
 }
 }

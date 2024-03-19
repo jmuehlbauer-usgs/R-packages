@@ -24,13 +24,10 @@ The matrix specified in \code{Data} must contain only numeric values (i.e., no r
 ## Compute cv on some simple data
 cvord <- cv(ordmat)
 }
-\author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
-}
 \seealso{
 \code{\link{NMS}}, which runs ordinations on data, \code{\link{rel}} for relativizing by rows or columns in the dataset, and \code{\link{delRare}} for deleting rare species.
 }
-\concept{
-relativization, ordination, coefficient of variation
+\author{
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
 }
-
+\concept{relativization, ordination, coefficient of variation}

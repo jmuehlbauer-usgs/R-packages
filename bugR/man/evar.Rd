@@ -4,7 +4,9 @@
 \name{evar}
 \alias{evar}
 \title{A simple environmental variable dataframe.}
-\format{A data frame with 20 rows representing sites and 2 columns representing environmental variables.}
+\format{
+A data frame with 20 rows representing sites and 2 columns representing environmental variables.
+}
 \usage{
 evar
 }
@@ -12,4 +14,3 @@ evar
 A simple environmental variable dataframe.
 }
 \keyword{datasets}
-

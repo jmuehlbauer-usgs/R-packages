@@ -4,8 +4,14 @@
 \alias{ordRotate}
 \title{Rotate ordination axes.}
 \usage{
-ordRotate(ord, env.fit, env.vector, x.axis = TRUE, positive = TRUE,
-  flip = FALSE)
+ordRotate(
+  ord,
+  env.fit,
+  env.vector,
+  x.axis = TRUE,
+  positive = TRUE,
+  flip = FALSE
+)
 }
 \arguments{
 \item{ord}{The ordination output points dataframe from \code{\link{NMS}}.}
@@ -42,13 +48,10 @@ par(mfrow = c(2, 1))
 plot(pts2D, main = "Original")
 plot(rot, main = "Rotated")
 }
-\author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
-}
 \seealso{
 \code{\link{NMS}}, which runs ordinations on data, and \code{\link{axisR2}} for the \eqn{R^{2}}{R^2} values of the axes. This function requires and builds upon functionality in \code{\link{envfit}} from package \code{vegan}.
 }
-\concept{
-relativization, ordination, variation, rotation
+\author{
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
 }
-
+\concept{relativization, ordination, variation, rotation}

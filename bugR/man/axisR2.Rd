@@ -33,13 +33,10 @@ The argument \code{dist.method} passes its value on to \code{\link{vegdist}} in 
 ## Note that ordmat is a simple matrix that was fed into the NMS function.
 ordR2 <- axisR2(ordmat, pts2D)
 }
-\author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
-}
 \seealso{
 \code{\link{NMS}}, which runs ordinations on data, and \code{\link{ordRotate}} for rotating ordination axes based on environmental variables. This function wraps and builds upon functionality in \code{\link{vegdist}} from package \code{vegan}.
 }
-\concept{
-relativization, ordination, variation
+\author{
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
 }
-
+\concept{relativization, ordination, variation}

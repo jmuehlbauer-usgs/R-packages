@@ -4,7 +4,9 @@
 \name{pts2D}
 \alias{pts2D}
 \title{2-dimensional ordination output.}
-\format{A dataframe with 20 rows representing sites and 2 columns representing ordination axes.}
+\format{
+A dataframe with 20 rows representing sites and 2 columns representing ordination axes.
+}
 \usage{
 pts2D
 }
@@ -12,4 +14,3 @@ pts2D
 2-dimensional ordination output.
 }
 \keyword{datasets}
-

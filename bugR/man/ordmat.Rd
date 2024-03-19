@@ -4,7 +4,9 @@
 \name{ordmat}
 \alias{ordmat}
 \title{A simple matrix for ordination.}
-\format{A data frame with 20 rows representing sites and 5 columns representing species.}
+\format{
+A data frame with 20 rows representing sites and 5 columns representing species.
+}
 \usage{
 ordmat
 }
@@ -12,4 +14,3 @@ ordmat
 A simple matrix for ordination.
 }
 \keyword{datasets}
-

@@ -32,13 +32,10 @@ The argument \code{level} should be a proportion (\code{0 < level < 1}) if delet
 ## Delete species whose total abundance is < 100 from a simple data matrix
 drmat <- delRare(ordmat, filt = "abund", level = 100)
 }
-\author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
-}
 \seealso{
 \code{\link{NMS}}, which runs ordinations on data, \code{\link{rel}} for relativizing by rows or columns in the dataset, and \code{\link{cv}} for assessing the coefficients of variaiton of the rows and columns of a dataset.
 }
-\concept{
-relativization, ordination, coefficient of variation, rarity
+\author{
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}.
 }
-
+\concept{relativization, ordination, coefficient of variation, rarity}

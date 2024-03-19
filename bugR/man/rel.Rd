@@ -28,13 +28,10 @@ Relativization can be done by rows (\code{rel.by = "row"}, columns (\code{rel.by
 ## Relativize some simple data by species maximum
 ordrel <- rel(ordmat, rel.by = "col")
 }
-\author{
-Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}. Based on content from Dean Urban and Sarah Goslee.
-}
 \seealso{
 \code{\link{NMS}}, which runs ordinations on data, and \code{\link{cv}} for checking the cv of the rows and columns in the dataset.
 }
-\concept{
-relativization, ordination, coefficient of variation
+\author{
+Jeffrey D. Muehlbauer, \email{jmuehlbauer@usgs.gov}. Based on content from Dean Urban and Sarah Goslee.
 }
-
+\concept{relativization, ordination, coefficient of variation}
