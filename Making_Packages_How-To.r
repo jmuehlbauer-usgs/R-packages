@@ -108,5 +108,6 @@ git reset --hard origin/main
 ##### Download and install the package from GitHUB #####
 
 ## Other users can now install the package from GitHub:
-require(devtools)
-install_github(repo='jmuehlbauer-usgs/R-packages',subdir='foodbase')
+install.packages("remotes")
+require(remotes)
+install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "foodbase")
