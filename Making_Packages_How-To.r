@@ -53,6 +53,7 @@ testfx()
 ## Document and install the foodbase function
 require(devtools)
 require(roxygen2)
+#setwd('C:/Users/jmuehlbauer/Documents/R/Custom/foodbase')
 setwd('C:/Users/jdmuehlbauer/OneDrive - University of Alaska/Documents/R/Custom/foodbase')
 document()
 setwd('..')
