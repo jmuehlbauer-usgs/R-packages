@@ -5,7 +5,7 @@ Description: This packages contains functions for downloading stream gage data a
 
 __Installation instructions:__  
 In `R`, paste the following lines of code:  
-`install.packages("remotes")`
+`install.packages("remotes")`  
 `require(remotes)`  
 `install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "GCgage")`  
 Note that the first line is unnecessary if `remotes` is already installed.
