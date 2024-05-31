@@ -53,6 +53,7 @@ testfx()
 ## Document and install the foodbase function
 require(devtools)
 require(roxygen2)
+#setwd('C:/Users/jmuehlbauer/Documents/R/Custom/foodbase')
 setwd('C:/Users/jdmuehlbauer/OneDrive - University of Alaska/Documents/R/Custom/foodbase')
 document()
 setwd('..')
@@ -107,5 +108,6 @@ git reset --hard origin/main
 ##### Download and install the package from GitHUB #####
 
 ## Other users can now install the package from GitHub:
-require(devtools)
-install_github(repo='jmuehlbauer-usgs/R-packages',subdir='foodbase')
+install.packages("remotes")
+require(remotes)
+install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "foodbase")
