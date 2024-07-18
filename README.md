@@ -1,7 +1,7 @@
 # :gift: R-packages
 **Custom packages and functions for R**
 
-These packages are created principally for use by my research group and colleagues, specifically at the [USGS Grand Canyon Monitoring and Research Center](https://www.usgs.gov/centers/sbsc/about/gcmrc), to facilitate common `R` tasks that we carry out with some regularity.  
+These packages are created principally for use by my research group and colleagues, specifically at the [USGS Grand Canyon Monitoring and Research Center](https://www.usgs.gov/centers/sbsc/about/gcmrc) and, increasingly, at the [Alaska Rivers Lab](https://akriverecology.weebly.com/) at the University of Alaska Fairbanks, to facilitate common `R` tasks that we carry out with some regularity.  
   
 __Current list of packages:__  
 __plots__: Convenience functions for common plotting operations  
