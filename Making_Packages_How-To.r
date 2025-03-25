@@ -111,3 +111,26 @@ git reset --hard origin/main
 install.packages("remotes")
 require(remotes)
 install_github(repo = "jmuehlbauer-usgs/R-packages", subdir = "foodbase")
+
+
+##### Swapping out master to main branch #####
+
+## Rename local branch
+git branch -m master main
+
+## Create main branch on remote
+git push -u origin main
+
+## Change name of tracked branch on remote
+git fetch -p origin
+git branch -u origin/master main
+
+## Change local main branch
+git remote set-head origin -a
+
+## Remove master branch locally and on remote
+	## NOTE: Will need to make master not default and not protected, on GitLab
+	## Under Project Settings, go to "Repository" then "Branch defaults" (change to main) and "Protected branches" (remove master)
+	## NOTE: Some of these may return errors (because they've already been done. OK if so).
+git branch -D master
+git push origin :master

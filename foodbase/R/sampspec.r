@@ -359,7 +359,7 @@ if(gear == 'Drift'){
 		}
 		mesh1 <- samp2[match(spec9$BarcodeID, samp2$BarcodeID), 'GearID']
 		pull1 <- 6
-		dmul1 <- driftMult$Mesh[, -3]
+		dmul1 <- driftMult$Mesh[, -2]
 		spec9a <- spec9[mesh1$GearID == pull1,]
 	} else {if(mesh == '500'){
 		if(FALSE %in% (unique(samp2$GearID) %in% c(4, 6))){
@@ -367,7 +367,7 @@ if(gear == 'Drift'){
 		}
 		mesh1 <- samp2[match(spec9$BarcodeID, samp2$BarcodeID), 'GearID']
 		pull1 <- 4
-		dmul1 <- driftMult$Mesh[, -2]
+		dmul1 <- driftMult$Mesh[, -3]
 		spec9a <- spec9[mesh1$GearID == pull1,]
 	} else {if(mesh == 'origin' | mesh == '' | is.na(mesh)){
 		if(length(unique(samp2$GearID)) > 1){
@@ -394,7 +394,7 @@ if(exists('spec9a')){if(dim(spec9a)[1] > 0){
 	spec9d <- dmul2 * rowSums(spec9c) * dmul3[, -1]
 	v9c <- unlist(spec9c)
 	if(pull1 == 4){
-		spec9e <- round(as.matrix(spec9c) - spec9d)
+		spec9e <- round(spec9d)
 		spec9e[is.na(spec9e) | spec9e < 0] <- 0
 		v9e <- unlist(spec9e)
 		less1 <- which(v9e > v9c)
@@ -404,7 +404,7 @@ if(exists('spec9a')){if(dim(spec9a)[1] > 0){
 			colnames(spec9f) <- colnames(spec9c)
 	}
 	if(pull1 == 6){
-		spec9e <- round(as.matrix(spec9c) + spec9d)
+		spec9e <- round(spec9d)
 		spec9e[is.na(spec9e) | spec9e < 0] <- 0
 		v9e <- unlist(spec9e)
 		more1 <- which(v9e < v9c)

@@ -82,7 +82,7 @@ if(FALSE %in% (files %in% list.files(dbdir)) | updater != FALSE){
 	netcheck <- length(grep('gs.doi.net', system('ipconfig', intern = TRUE)))
 	if(updater == 'GitLab' | dir.exists(netpath) == FALSE){
 		gitpath1 <- 'https://code.usgs.gov/api/v4/projects/5233/repository/files/'
-		gitpath2 <- '/raw?ref=master&private_token=glpat-_jremxERa3CEtyW4Ruit'
+		#gitpath2 <- Nonfunctional
 		lapply(files, function(x){download.file(paste0(gitpath1, x, gitpath2), paste0(dbdir, '/', x))})
     } else {
 		file.copy(paste0(netpath, files), paste0(dbdir,'/'), overwrite = TRUE, copy.date = TRUE)
