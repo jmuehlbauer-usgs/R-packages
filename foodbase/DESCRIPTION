@@ -1,7 +1,7 @@
 Package: foodbase
 Title: Functions for Reading and Working with Foodbase Data
-Version: 3.2.2
-Date: 2024-05-24
+Version: 3.3
+Date: 2025-03-18
 Authors@R: c(
 	person('Jeffrey D.', 'Muehlbauer', email = 'jmuehlbauer@usgs.gov', role = c('aut', 'cre')),
 	person('Michael J.', 'Dodrill', email = 'mdodrill@usgs.gov', role = 'aut'))
@@ -17,4 +17,4 @@ License: GPL-3
 URL: https://github.com/jmuehlbauer-usgs/R-packages
 LazyData: true
 Encoding: UTF-8
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
