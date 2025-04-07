@@ -105,6 +105,19 @@ git fetch --all
 git branch backup-main
 git reset --hard origin/main
 
+
+##### Clone cloud repository to local empty folder #####
+
+## Initialize local repo
+git init
+
+## Connect to remote repo
+git remote add origin https://github.com/jmuehlbauer-usgs/R-packages.git
+
+## Pull from remote
+git pull origin main
+
+
 ##### Download and install the package from GitHUB #####
 
 ## Other users can now install the package from GitHub:
